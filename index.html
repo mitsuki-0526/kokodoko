@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ココドコ？</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- タイトル画面 -->
+  <div id="screen-title" class="screen active">
+    <div class="title-content">
+      <div class="title-deco">🌍</div>
+      <h1 class="title-logo">ココドコ？</h1>
+      <p class="title-sub">ストリートビューを見て<br>場所を地図で当てよう！</p>
+      <button id="btn-to-name" class="btn btn-primary">あそぶ！</button>
+      <button id="btn-view-ranking" class="btn btn-secondary" style="margin-top:12px">🏆 ランキングを見る</button>
+    </div>
+  </div>
+
+  <!-- 名前入力画面 -->
+  <div id="screen-name" class="screen">
+    <div class="card-screen">
+      <div class="card-icon">✏️</div>
+      <h2 class="card-title">じぶんを選んでね</h2>
+      <div class="selector-row">
+        <div class="selector-group">
+          <label class="selector-label">年</label>
+          <select id="sel-year" class="pref-select selector-sel">
+            <option value="">－</option>
+            <option value="1">1年</option>
+            <option value="2">2年</option>
+            <option value="3">3年</option>
+          </select>
+        </div>
+        <div class="selector-group">
+          <label class="selector-label">組</label>
+          <select id="sel-class" class="pref-select selector-sel">
+            <option value="">－</option>
+            <option value="1">1組</option>
+            <option value="2">2組</option>
+            <option value="3">3組</option>
+            <option value="4">4組</option>
+            <option value="5">5組</option>
+            <option value="6">6組</option>
+          </select>
+        </div>
+        <div class="selector-group">
+          <label class="selector-label">番</label>
+          <select id="sel-num" class="pref-select selector-sel">
+            <option value="">－</option>
+            <option value="1">1番</option>
+            <option value="2">2番</option>
+            <option value="3">3番</option>
+            <option value="4">4番</option>
+            <option value="5">5番</option>
+            <option value="6">6番</option>
+            <option value="7">7番</option>
+            <option value="8">8番</option>
+            <option value="9">9番</option>
+            <option value="10">10番</option>
+            <option value="11">11番</option>
+            <option value="12">12番</option>
+            <option value="13">13番</option>
+            <option value="14">14番</option>
+            <option value="15">15番</option>
+            <option value="16">16番</option>
+            <option value="17">17番</option>
+            <option value="18">18番</option>
+            <option value="19">19番</option>
+            <option value="20">20番</option>
+            <option value="21">21番</option>
+            <option value="22">22番</option>
+            <option value="23">23番</option>
+            <option value="24">24番</option>
+            <option value="25">25番</option>
+            <option value="26">26番</option>
+            <option value="27">27番</option>
+            <option value="28">28番</option>
+            <option value="29">29番</option>
+            <option value="30">30番</option>
+            <option value="31">31番</option>
+            <option value="32">32番</option>
+            <option value="33">33番</option>
+            <option value="34">34番</option>
+            <option value="35">35番</option>
+            <option value="36">36番</option>
+            <option value="37">37番</option>
+            <option value="38">38番</option>
+            <option value="39">39番</option>
+            <option value="40">40番</option>
+          </select>
+        </div>
+      </div>
+      <p id="name-error" class="error-msg"></p>
+      <div style="display:flex;flex-direction:column;gap:10px;width:100%">
+        <button id="btn-to-mode" class="btn btn-primary" disabled>つぎへ →</button>
+        <button id="btn-name-back" class="btn btn-secondary">タイトルに戻る</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- モード選択画面 -->
+  <div id="screen-mode" class="screen">
+    <div class="card-screen">
+      <div class="card-icon">🗾</div>
+      <h2 class="card-title">モードをえらんでね</h2>
+      <div class="mode-buttons">
+        <button class="mode-card" id="mode-japan">
+          <span class="mode-icon">🗾</span>
+          <span class="mode-label">全国モード</span>
+          <span class="mode-desc">日本のどこかから出題！</span>
+        </button>
+        <button class="mode-card" id="mode-local">
+          <span class="mode-icon">📍</span>
+          <span class="mode-label">地元モード</span>
+          <span class="mode-desc">みんなのよく知る地元から出題！</span>
+        </button>
+      </div>
+      <!-- 地元モード時の都道府県選択 -->
+      <div id="pref-selector" class="pref-selector hidden">
+        <select id="pref-select" class="pref-select">
+          <option value="">エリアを選んでください</option>
+          <optgroup label="⭐ カスタムエリア">
+            <option value="chikko">築港エリア（大阪港〜弁天町）</option>
+          </optgroup>
+          <optgroup label="都道府県">
+          <option value="hokkaido">北海道</option>
+          <option value="aomori">青森県</option>
+          <option value="iwate">岩手県</option>
+          <option value="miyagi">宮城県</option>
+          <option value="akita">秋田県</option>
+          <option value="yamagata">山形県</option>
+          <option value="fukushima">福島県</option>
+          <option value="ibaraki">茨城県</option>
+          <option value="tochigi">栃木県</option>
+          <option value="gunma">群馬県</option>
+          <option value="saitama">埼玉県</option>
+          <option value="chiba">千葉県</option>
+          <option value="tokyo">東京都</option>
+          <option value="kanagawa">神奈川県</option>
+          <option value="niigata">新潟県</option>
+          <option value="toyama">富山県</option>
+          <option value="ishikawa">石川県</option>
+          <option value="fukui">福井県</option>
+          <option value="yamanashi">山梨県</option>
+          <option value="nagano">長野県</option>
+          <option value="shizuoka">静岡県</option>
+          <option value="aichi">愛知県</option>
+          <option value="mie">三重県</option>
+          <option value="shiga">滋賀県</option>
+          <option value="kyoto">京都府</option>
+          <option value="osaka">大阪府</option>
+          <option value="hyogo">兵庫県</option>
+          <option value="nara">奈良県</option>
+          <option value="wakayama">和歌山県</option>
+          <option value="tottori">鳥取県</option>
+          <option value="shimane">島根県</option>
+          <option value="okayama">岡山県</option>
+          <option value="hiroshima">広島県</option>
+          <option value="yamaguchi">山口県</option>
+          <option value="tokushima">徳島県</option>
+          <option value="kagawa">香川県</option>
+          <option value="ehime">愛媛県</option>
+          <option value="kochi">高知県</option>
+          <option value="fukuoka">福岡県</option>
+          <option value="saga">佐賀県</option>
+          <option value="nagasaki">長崎県</option>
+          <option value="kumamoto">熊本県</option>
+          <option value="oita">大分県</option>
+          <option value="miyazaki">宮崎県</option>
+          <option value="kagoshima">鹿児島県</option>
+          <option value="okinawa">沖縄県</option>
+          </optgroup>
+        </select>
+        <button id="btn-start-local" class="btn btn-primary" disabled>この県でスタート！</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 読み込み中画面 -->
+  <div id="screen-loading" class="screen">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <p class="loading-text">ストリートビューを探し中…</p>
+    </div>
+  </div>
+
+  <!-- プレイ画面 -->
+  <div id="screen-game" class="screen">
+    <div class="game-header">
+      <div class="header-left">
+        <span class="player-name-display" id="header-name"></span>
+      </div>
+      <div class="round-dots" id="round-dots"></div>
+      <div class="header-right">
+        <span class="score-badge">🏆 <span id="total-score">0</span>点</span>
+      </div>
+    </div>
+    <div class="game-body">
+      <div id="streetview"></div>
+      <div class="map-panel">
+        <div class="map-hint">📍 クリックして場所を当てよう！</div>
+        <div id="answer-map"></div>
+        <button id="btn-submit" class="btn btn-submit" disabled>ここだ！決定 ✓</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1問結果画面 -->
+  <div id="screen-result" class="screen">
+    <div class="result-content">
+      <div id="result-medal" class="result-medal"></div>
+      <h2 id="result-distance" class="result-distance"></h2>
+      <p id="result-score-msg" class="result-score-msg"></p>
+      <div id="result-map"></div>
+      <button id="btn-next" class="btn btn-primary"></button>
+    </div>
+  </div>
+
+  <!-- 最終結果画面 -->
+  <div id="screen-final" class="screen">
+    <div class="result-content">
+      <h2 class="final-title">ゲーム終了！</h2>
+      <div id="final-medal" class="result-medal"></div>
+      <p class="final-score-label">最終スコア</p>
+      <p id="final-score" class="final-score-value"></p>
+      <p id="final-rank" class="final-rank"></p>
+      <div id="gas-submit-area">
+        <p class="ranking-msg">ランキングに登録しますか？</p>
+        <div class="final-buttons">
+          <button id="btn-submit-score" class="btn btn-primary">登録する！</button>
+          <button id="btn-skip-score" class="btn btn-secondary">スキップ</button>
+        </div>
+      </div>
+      <div id="gas-status" class="gas-status hidden"></div>
+    </div>
+  </div>
+
+  <!-- ランキング画面 -->
+  <div id="screen-ranking" class="screen">
+    <div class="ranking-content">
+      <h2 class="ranking-title">🏆 ランキング</h2>
+      <div class="ranking-tabs">
+        <button class="ranking-tab active" data-mode="nationwide">🗾 全国モード</button>
+        <button class="ranking-tab" data-mode="local">📍 地元モード</button>
+      </div>
+      <div id="ranking-list" class="ranking-list"></div>
+      <div class="ranking-buttons">
+        <button id="btn-retry" class="btn btn-primary">もう一度あそぶ！</button>
+        <button id="btn-back-title" class="btn btn-secondary">タイトルへ</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDQdx0rWjR97O2T_pkyd0tNRpG6APMgR7w&callback=initGame&loading=async"></script>
+  <script src="game.js"></script>
+</body>
+</html>

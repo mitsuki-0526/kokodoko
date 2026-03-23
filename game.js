@@ -1,0 +1,600 @@
+'use strict';
+
+// ========== GAS URL（ランキング使用時はここに貼る） ==========
+const GAS_URL = 'https://script.google.com/macros/s/AKfycby7hjXQSJOlXvU8eDhd6Ip0rwW5o2MRtqWKOmo5RnRHOPGin9muGVnKFe0-x7HcCEUC/exec';
+
+// ========== 設定 ==========
+const TOTAL_ROUNDS = 3;
+const MAX_SCORE_PER_ROUND = 1000;
+const MAX_DISTANCE_KM = 2000;       // 全国モード：2000km 基準
+const MAX_DISTANCE_LOCAL_KM = 3;    // 地元モード：3km 基準（築港エリア想定）
+
+// ========== 全国モード 出題座標リスト（30か所） ==========
+const LOCATIONS = [
+  { lat: 35.6595, lng: 139.7004, label: '渋谷スクランブル交差点' },
+  { lat: 35.7101, lng: 139.8107, label: '東京スカイツリー周辺' },
+  { lat: 35.6586, lng: 139.7454, label: '東京タワー周辺' },
+  { lat: 35.6938, lng: 139.7034, label: '新宿西口' },
+  { lat: 35.7148, lng: 139.7967, label: '浅草寺周辺' },
+  { lat: 34.6937, lng: 135.5023, label: '大阪城周辺' },
+  { lat: 34.6727, lng: 135.5022, label: '道頓堀' },
+  { lat: 34.7024, lng: 135.4959, label: '梅田' },
+  { lat: 35.0116, lng: 135.7681, label: '京都 金閣寺周辺' },
+  { lat: 34.9949, lng: 135.7850, label: '京都 祇園' },
+  { lat: 35.3606, lng: 138.7274, label: '富士山五合目' },
+  { lat: 34.3853, lng: 132.4553, label: '広島 原爆ドーム周辺' },
+  { lat: 43.0618, lng: 141.3545, label: '札幌 大通公園' },
+  { lat: 43.0688, lng: 141.3508, label: '札幌 時計台' },
+  { lat: 33.5904, lng: 130.4017, label: '福岡 天神周辺' },
+  { lat: 33.6060, lng: 130.4181, label: '博多駅周辺' },
+  { lat: 26.2123, lng: 127.6792, label: '那覇 国際通り' },
+  { lat: 26.4588, lng: 127.9294, label: '美ら海水族館周辺' },
+  { lat: 38.2682, lng: 140.8694, label: '仙台 青葉城跡' },
+  { lat: 36.6485, lng: 138.1952, label: '長野 善光寺周辺' },
+  { lat: 35.1855, lng: 136.8994, label: '名古屋城周辺' },
+  { lat: 35.1709, lng: 136.8815, label: '名古屋 栄' },
+  { lat: 34.6901, lng: 135.1956, label: '神戸 三宮' },
+  { lat: 34.6499, lng: 135.1882, label: '神戸 北野異人館' },
+  { lat: 32.7503, lng: 129.8779, label: '長崎 平和公園' },
+  { lat: 31.5966, lng: 130.5571, label: '鹿児島 城山' },
+  { lat: 36.5619, lng: 136.6562, label: '金沢 ひがし茶屋街' },
+  { lat: 33.5553, lng: 130.3788, label: '太宰府天満宮周辺' },
+  { lat: 34.3948, lng: 132.3152, label: '宮島 厳島神社周辺' },
+  { lat: 35.5023, lng: 134.2353, label: '鳥取砂丘' },
+];
+
+// ========== カスタムエリア（学校・地域指定） ==========
+// searchRadius: その地点周辺の何m以内でStreetViewを探すか（港・海の多い地域は小さめに）
+const CUSTOM_REGIONS = {
+  chikko: {
+    name: '築港エリア（大阪港〜弁天町）',
+    north: 34.675, south: 34.636, east: 135.473, west: 135.420,
+    searchRadius: 1500,
+  },
+};
+
+// ========== 都道府県バウンディングボックス ==========
+const PREFECTURES = {
+  hokkaido:  { name: '北海道', north: 45.5, south: 41.4, east: 145.8, west: 139.3 },
+  aomori:    { name: '青森県', north: 41.6, south: 40.2, east: 141.7, west: 139.8 },
+  iwate:     { name: '岩手県', north: 40.5, south: 38.7, east: 142.1, west: 140.6 },
+  miyagi:    { name: '宮城県', north: 38.9, south: 37.8, east: 141.7, west: 140.2 },
+  akita:     { name: '秋田県', north: 40.5, south: 39.0, east: 140.9, west: 139.7 },
+  yamagata:  { name: '山形県', north: 39.0, south: 37.8, east: 140.6, west: 139.8 },
+  fukushima: { name: '福島県', north: 37.9, south: 36.8, east: 141.1, west: 139.1 },
+  ibaraki:   { name: '茨城県', north: 36.8, south: 35.7, east: 140.9, west: 139.7 },
+  tochigi:   { name: '栃木県', north: 37.1, south: 36.2, east: 140.3, west: 139.3 },
+  gunma:     { name: '群馬県', north: 36.9, south: 36.1, east: 139.5, west: 138.4 },
+  saitama:   { name: '埼玉県', north: 36.3, south: 35.8, east: 139.9, west: 138.7 },
+  chiba:     { name: '千葉県', north: 35.9, south: 34.9, east: 140.9, west: 139.7 },
+  tokyo:     { name: '東京都', north: 35.9, south: 35.5, east: 139.9, west: 138.9 },
+  kanagawa:  { name: '神奈川県', north: 35.7, south: 35.1, east: 139.7, west: 139.0 },
+  niigata:   { name: '新潟県', north: 38.5, south: 36.8, east: 139.6, west: 137.6 },
+  toyama:    { name: '富山県', north: 36.8, south: 36.4, east: 137.7, west: 136.7 },
+  ishikawa:  { name: '石川県', north: 37.8, south: 36.2, east: 137.1, west: 136.2 },
+  fukui:     { name: '福井県', north: 36.3, south: 35.4, east: 136.8, west: 135.9 },
+  yamanashi: { name: '山梨県', north: 35.9, south: 35.2, east: 139.2, west: 138.3 },
+  nagano:    { name: '長野県', north: 36.7, south: 35.2, east: 138.6, west: 137.3 },
+  shizuoka:  { name: '静岡県', north: 35.5, south: 34.6, east: 139.1, west: 137.5 },
+  aichi:     { name: '愛知県', north: 35.4, south: 34.5, east: 137.8, west: 136.7 },
+  mie:       { name: '三重県', north: 35.0, south: 33.7, east: 136.8, west: 135.9 },
+  shiga:     { name: '滋賀県', north: 35.7, south: 34.8, east: 136.3, west: 135.8 },
+  kyoto:     { name: '京都府', north: 35.7, south: 34.7, east: 135.9, west: 134.9 },
+  osaka:     { name: '大阪府', north: 34.9, south: 34.3, east: 135.7, west: 135.1 },
+  hyogo:     { name: '兵庫県', north: 35.7, south: 34.1, east: 135.5, west: 134.2 },
+  nara:      { name: '奈良県', north: 34.7, south: 33.9, east: 136.2, west: 135.6 },
+  wakayama:  { name: '和歌山県', north: 34.3, south: 33.4, east: 136.0, west: 135.0 },
+  tottori:   { name: '鳥取県', north: 35.6, south: 35.0, east: 134.5, west: 133.2 },
+  shimane:   { name: '島根県', north: 35.5, south: 34.3, east: 133.3, west: 131.7 },
+  okayama:   { name: '岡山県', north: 35.2, south: 34.5, east: 134.4, west: 133.2 },
+  hiroshima: { name: '広島県', north: 34.9, south: 33.9, east: 133.3, west: 131.8 },
+  yamaguchi: { name: '山口県', north: 34.5, south: 33.7, east: 132.1, west: 130.6 },
+  tokushima: { name: '徳島県', north: 34.2, south: 33.4, east: 134.8, west: 133.7 },
+  kagawa:    { name: '香川県', north: 34.4, south: 33.9, east: 134.3, west: 133.5 },
+  ehime:     { name: '愛媛県', north: 34.1, south: 32.9, east: 133.7, west: 132.0 },
+  kochi:     { name: '高知県', north: 33.9, south: 32.7, east: 134.3, west: 132.5 },
+  fukuoka:   { name: '福岡県', north: 33.9, south: 33.1, east: 131.2, west: 130.0 },
+  saga:      { name: '佐賀県', north: 33.6, south: 33.0, east: 130.5, west: 129.7 },
+  nagasaki:  { name: '長崎県', north: 33.5, south: 32.1, east: 130.4, west: 128.5 },
+  kumamoto:  { name: '熊本県', north: 33.2, south: 32.0, east: 131.3, west: 130.0 },
+  oita:      { name: '大分県', north: 33.7, south: 32.7, east: 132.1, west: 130.9 },
+  miyazaki:  { name: '宮崎県', north: 32.8, south: 31.4, east: 131.9, west: 130.7 },
+  kagoshima: { name: '鹿児島県', north: 32.3, south: 30.1, east: 131.3, west: 129.3 },
+  okinawa:   { name: '沖縄県', north: 26.9, south: 24.0, east: 128.3, west: 122.9 },
+};
+
+// ========== 状態 ==========
+let panorama, answerMap, answerMarker, resultMap, svService;
+let playerName = '';
+let currentMode = 'japan'; // 'japan' | 'local'
+let currentPrefKey = '';
+let currentRound = 0;
+let currentLocation = null; // { lat, lng } または LatLng
+let totalScore = 0;
+let roundOrder = [];
+let localPanoramas = []; // 地元モードで収集した座標
+
+// ========== 画面切り替え ==========
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  // StreetViewのWebGLテクスチャが崩れないようにリサイズを通知
+  if (id === 'screen-game' && panorama) {
+    setTimeout(() => google.maps.event.trigger(panorama, 'resize'), 50);
+  }
+}
+
+// ========== Google Maps API 初期化コールバック ==========
+window.initGame = function () {
+  svService = new google.maps.StreetViewService();
+
+  // タイトル → 名前入力
+  document.getElementById('btn-to-name').addEventListener('click', () => showScreen('screen-name'));
+
+  // 名前入力 → タイトルに戻る
+  document.getElementById('btn-name-back').addEventListener('click', () => showScreen('screen-title'));
+
+  // タイトル → ランキング確認
+  document.getElementById('btn-view-ranking').addEventListener('click', () => showRanking('nationwide'));
+
+  // 年・組・番ドロップダウン → ボタンの有効化
+  const selYear  = document.getElementById('sel-year');
+  const selClass = document.getElementById('sel-class');
+  const selNum   = document.getElementById('sel-num');
+  const btnToMode = document.getElementById('btn-to-mode');
+
+  function updateNameButton() {
+    btnToMode.disabled = !(selYear.value && selClass.value && selNum.value);
+  }
+  selYear.addEventListener('change', updateNameButton);
+  selClass.addEventListener('change', updateNameButton);
+  selNum.addEventListener('change', updateNameButton);
+
+  // 名前入力 → モード選択
+  btnToMode.addEventListener('click', () => {
+    if (!selYear.value || !selClass.value || !selNum.value) {
+      document.getElementById('name-error').textContent = '年・組・番をすべて選んでね！';
+      return;
+    }
+    playerName = `${selYear.value}年${selClass.value}組${selNum.value}番`;
+    document.getElementById('name-error').textContent = '';
+    showScreen('screen-mode');
+  });
+
+  // モード選択
+  document.getElementById('mode-japan').addEventListener('click', () => {
+    selectMode('japan');
+    startGame();
+  });
+
+  document.getElementById('mode-local').addEventListener('click', () => {
+    selectMode('local');
+    currentPrefKey = 'chikko';
+    startGame();
+  });
+
+  // ゲーム内
+  document.getElementById('btn-submit').addEventListener('click', onSubmit);
+
+  // 結果画面
+  document.getElementById('btn-next').addEventListener('click', nextRound);
+
+  // 最終結果
+  document.getElementById('btn-submit-score').addEventListener('click', submitScore);
+  document.getElementById('btn-skip-score').addEventListener('click', () => {
+    const tab = currentMode === 'local' ? 'local' : 'nationwide';
+    showRanking(tab);
+  });
+
+  // ランキング画面
+  document.getElementById('btn-retry').addEventListener('click', () => {
+    resetGame();
+    showScreen('screen-name');
+  });
+  document.getElementById('btn-back-title').addEventListener('click', () => {
+    resetGame();
+    showScreen('screen-title');
+  });
+};
+
+// ========== モード選択UI ==========
+function selectMode(mode) {
+  currentMode = mode;
+  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById(mode === 'japan' ? 'mode-japan' : 'mode-local').classList.add('selected');
+  if (mode === 'japan') {
+    document.getElementById('pref-selector').classList.add('hidden');
+  }
+}
+
+// ========== ゲーム開始 ==========
+function startGame() {
+  totalScore = 0;
+  currentRound = 0;
+  localPanoramas = [];
+
+  initMaps();
+  updateHeader();
+
+  if (currentMode === 'japan') {
+    roundOrder = shuffled([...Array(LOCATIONS.length).keys()]).slice(0, TOTAL_ROUNDS);
+    showScreen('screen-game');
+    loadRound();
+  } else {
+    // 地元モード：先に全問分のパノラマを探す
+    showScreen('screen-loading');
+    collectLocalPanoramas(0);
+  }
+}
+
+// ========== 地元モード：パノラマをN問分収集 ==========
+function collectLocalPanoramas(count) {
+  if (count >= TOTAL_ROUNDS) {
+    showScreen('screen-game');
+    loadRound();
+    return;
+  }
+  const region = CUSTOM_REGIONS[currentPrefKey] || PREFECTURES[currentPrefKey];
+  findPanoramaInRegion(region, 0, (latLng) => {
+    if (latLng) localPanoramas.push(latLng);
+    else {
+      // 見つからなければ全国モードの座標で代替
+      const loc = LOCATIONS[Math.floor(Math.random() * LOCATIONS.length)];
+      localPanoramas.push(new google.maps.LatLng(loc.lat, loc.lng));
+    }
+    collectLocalPanoramas(count + 1);
+  });
+}
+
+// ========== 地域内ランダムパノラマ探索 ==========
+function findPanoramaInRegion(region, attempts, callback) {
+  if (attempts >= 20) { callback(null); return; }
+  const lat = region.south + Math.random() * (region.north - region.south);
+  const lng = region.west  + Math.random() * (region.east  - region.west);
+  const radius = region.searchRadius || 10000;
+  svService.getPanorama(
+    { location: { lat, lng }, radius, source: google.maps.StreetViewSource.OUTDOOR },
+    (data, status) => {
+      if (status === 'OK') callback(data.location.latLng);
+      else findPanoramaInRegion(region, attempts + 1, callback);
+    }
+  );
+}
+
+// ========== マップ初期化（初回のみ）==========
+function initMaps() {
+  if (panorama) return;
+
+  panorama = new google.maps.StreetViewPanorama(
+    document.getElementById('streetview'),
+    {
+      pov: { heading: 0, pitch: 0 },
+      zoom: 1,
+      addressControl: false,
+      fullscreenControl: false,
+      motionTracking: false,
+      motionTrackingControl: false,
+      showRoadLabels: false,
+    }
+  );
+
+  // 地元モードは大阪港駅中心・ズーム14、全国モードは日本全体
+  const mapCenter = currentMode === 'local'
+    ? { lat: 34.6544, lng: 135.4371 }
+    : { lat: 36.5, lng: 137.0 };
+  const mapZoom = currentMode === 'local' ? 14 : 5;
+
+  answerMap = new google.maps.Map(document.getElementById('answer-map'), {
+    center: mapCenter,
+    zoom: mapZoom,
+    mapTypeId: 'roadmap',
+    disableDefaultUI: true,
+    zoomControl: true,
+    gestureHandling: 'greedy',
+  });
+
+  answerMap.addListener('click', e => placeMarker(e.latLng));
+}
+
+// ========== マーカー設置 ==========
+function placeMarker(latLng) {
+  if (answerMarker) {
+    answerMarker.setPosition(latLng);
+  } else {
+    answerMarker = new google.maps.Marker({
+      position: latLng,
+      map: answerMap,
+      icon: {
+        path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
+        scale: 8, fillColor: '#ff6b9d', fillOpacity: 1,
+        strokeColor: '#fff', strokeWeight: 2,
+      },
+      animation: google.maps.Animation.DROP,
+    });
+  }
+  document.getElementById('btn-submit').disabled = false;
+}
+
+// ========== ヘッダー更新 ==========
+function updateHeader() {
+  document.getElementById('header-name').textContent = playerName;
+  buildRoundDots();
+}
+
+function buildRoundDots() {
+  const container = document.getElementById('round-dots');
+  container.innerHTML = '';
+  for (let i = 0; i < TOTAL_ROUNDS; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'round-dot' + (i < currentRound ? ' done' : i === currentRound ? ' current' : '');
+    container.appendChild(dot);
+  }
+}
+
+// ========== 問題読み込み ==========
+function loadRound() {
+  if (answerMarker) { answerMarker.setMap(null); answerMarker = null; }
+  document.getElementById('btn-submit').disabled = true;
+  document.getElementById('total-score').textContent = totalScore;
+  buildRoundDots();
+
+  if (currentMode === 'japan') {
+    const idx = roundOrder[currentRound];
+    const loc = LOCATIONS[idx];
+    currentLocation = new google.maps.LatLng(loc.lat, loc.lng);
+  } else {
+    currentLocation = localPanoramas[currentRound];
+  }
+
+  panorama.setPosition(currentLocation);
+  panorama.setPov({ heading: Math.random() * 360, pitch: 0 });
+}
+
+// ========== 解答決定 ==========
+function onSubmit() {
+  if (!answerMarker) return;
+  const playerLatLng = answerMarker.getPosition();
+  const distanceM = haversineDistance(playerLatLng, currentLocation) * 1000;
+  const distanceKm = distanceM / 1000;
+  const roundScore = calcScore(distanceKm);
+  totalScore += roundScore;
+  showResultScreen(distanceKm, roundScore, playerLatLng, currentLocation);
+}
+
+// ========== スコア計算 ==========
+function calcScore(distanceKm) {
+  const maxDist = currentMode === 'local' ? MAX_DISTANCE_LOCAL_KM : MAX_DISTANCE_KM;
+  if (distanceKm >= maxDist) return 0;
+  return Math.round(MAX_SCORE_PER_ROUND * Math.pow(1 - distanceKm / maxDist, 2));
+}
+
+// ========== 1問結果画面 ==========
+function showResultScreen(distanceKm, roundScore, playerLatLng, correctLatLng) {
+  const distStr = distanceKm < 1 ? `${Math.round(distanceKm * 1000)} m` : `${distanceKm.toFixed(1)} km`;
+
+  // メダル判定
+  let medal = '📍';
+  if (distanceKm < 1)   medal = '🎯';
+  else if (distanceKm < 10)  medal = '🥇';
+  else if (distanceKm < 50)  medal = '🥈';
+  else if (distanceKm < 200) medal = '🥉';
+
+  document.getElementById('result-medal').textContent = medal;
+  document.getElementById('result-distance').textContent = `距離: ${distStr}`;
+  document.getElementById('result-score-msg').textContent = `+${roundScore}点（合計: ${totalScore}点）`;
+
+  const isLast = currentRound >= TOTAL_ROUNDS - 1;
+  document.getElementById('btn-next').textContent = isLast ? '結果を見る！' : '次の問題へ →';
+
+  showScreen('screen-result');
+
+  // 結果マップ
+  if (!resultMap) {
+    resultMap = new google.maps.Map(document.getElementById('result-map'), {
+      disableDefaultUI: true, zoomControl: true, gestureHandling: 'greedy',
+    });
+  }
+  const bounds = new google.maps.LatLngBounds();
+  bounds.extend(playerLatLng);
+  bounds.extend(correctLatLng);
+  resultMap.fitBounds(bounds, 50);
+
+  new google.maps.Marker({
+    position: correctLatLng, map: resultMap,
+    label: { text: '正解', color: '#fff', fontWeight: 'bold', fontSize: '12px' },
+    icon: { path: google.maps.SymbolPath.CIRCLE, scale: 11, fillColor: '#2ecc71', fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2 },
+  });
+  new google.maps.Marker({
+    position: playerLatLng, map: resultMap,
+    label: { text: 'あなた', color: '#fff', fontWeight: 'bold', fontSize: '11px' },
+    icon: { path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW, scale: 8, fillColor: '#ff6b9d', fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2 },
+  });
+  new google.maps.Polyline({
+    path: [playerLatLng, correctLatLng], map: resultMap,
+    strokeColor: '#ffd700', strokeOpacity: 0.9, strokeWeight: 2,
+  });
+}
+
+// ========== 次の問題 ==========
+function nextRound() {
+  if (resultMap) { resultMap = null; document.getElementById('result-map').innerHTML = ''; }
+  currentRound++;
+  if (currentRound >= TOTAL_ROUNDS) {
+    showFinalScreen();
+  } else {
+    showScreen('screen-game');
+    loadRound();
+  }
+}
+
+// ========== 最終結果画面 ==========
+function showFinalScreen() {
+  document.getElementById('final-score').textContent = `${totalScore}点`;
+  document.getElementById('final-rank').textContent = getRank(totalScore);
+  document.getElementById('final-medal').textContent = getFinalMedal(totalScore);
+
+  const gasArea = document.getElementById('gas-submit-area');
+  const gasStatus = document.getElementById('gas-status');
+  gasArea.style.display = GAS_URL ? '' : 'none';
+  gasStatus.classList.add('hidden');
+  gasStatus.textContent = '';
+
+  showScreen('screen-final');
+}
+
+function getRank(score) {
+  const max = MAX_SCORE_PER_ROUND * TOTAL_ROUNDS;
+  const pct = score / max;
+  if (pct >= 0.9) return '地理マスター！！';
+  if (pct >= 0.7) return 'すごい！かなり正確だ！';
+  if (pct >= 0.5) return 'なかなかいい感じ！';
+  if (pct >= 0.3) return 'もう少し！練習しよう';
+  return '次は地図をよく見てみよう！';
+}
+
+function getFinalMedal(score) {
+  const max = MAX_SCORE_PER_ROUND * TOTAL_ROUNDS;
+  const pct = score / max;
+  if (pct >= 0.9) return '🏆';
+  if (pct >= 0.7) return '🥇';
+  if (pct >= 0.5) return '🥈';
+  if (pct >= 0.3) return '🥉';
+  return '📍';
+}
+
+// ========== GAS スコア送信 ==========
+async function submitScore() {
+  if (!GAS_URL) { showRanking(); return; }
+
+  const btn = document.getElementById('btn-submit-score');
+  const status = document.getElementById('gas-status');
+  btn.disabled = true;
+  btn.textContent = '送信中…';
+  status.classList.remove('hidden');
+  status.textContent = '⏳ 送信中です…';
+
+  try {
+    await fetch(GAS_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: playerName,
+        score: totalScore,
+        mode: currentMode === 'local' ? (CUSTOM_REGIONS[currentPrefKey]?.name || PREFECTURES[currentPrefKey]?.name) : '全国',
+      }),
+    });
+    status.textContent = '✅ 登録しました！';
+    const tab = currentMode === 'local' ? 'local' : 'nationwide';
+    setTimeout(() => showRanking(tab), 1000);
+  } catch (e) {
+    status.textContent = '❌ 送信に失敗しました。スキップします。';
+    const tab = currentMode === 'local' ? 'local' : 'nationwide';
+    setTimeout(() => showRanking(tab), 1500);
+  }
+}
+
+// ========== ランキング表示 ==========
+let allRankingData = null; // 取得済みデータをキャッシュ
+
+async function showRanking(tabMode) {
+  showScreen('screen-ranking');
+
+  // タブの初期選択
+  const activeTab = tabMode || 'nationwide';
+  document.querySelectorAll('.ranking-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.mode === activeTab);
+  });
+
+  // タブクリックで切り替え
+  document.querySelectorAll('.ranking-tab').forEach(tab => {
+    tab.onclick = () => {
+      document.querySelectorAll('.ranking-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      if (allRankingData) renderRanking(allRankingData, tab.dataset.mode);
+    };
+  });
+
+  const list = document.getElementById('ranking-list');
+  list.innerHTML = '<div class="ranking-loading">読み込み中…</div>';
+
+  if (!GAS_URL) {
+    list.innerHTML = '<div class="ranking-loading">ランキングを使うには<br>GAS URLを設定してください</div>';
+    return;
+  }
+
+  try {
+    const res = await fetch(GAS_URL + '?action=ranking');
+    allRankingData = await res.json();
+    renderRanking(allRankingData, activeTab);
+  } catch {
+    list.innerHTML = '<div class="ranking-loading">ランキングの取得に失敗しました</div>';
+  }
+}
+
+function renderRanking(scores, tabMode) {
+  const list = document.getElementById('ranking-list');
+
+  // モードでフィルタ（全国 or 地元）
+  const isLocal = tabMode === 'local';
+  let filtered = scores.filter(s => isLocal ? s.mode !== '全国' : s.mode === '全国');
+
+  // 同一人物の重複排除：名前ごとに最高スコアのみ残す
+  const best = {};
+  filtered.forEach(s => {
+    if (!best[s.name] || s.score > best[s.name].score) best[s.name] = s;
+  });
+  const deduped = Object.values(best).sort((a, b) => b.score - a.score);
+
+  if (deduped.length === 0) {
+    list.innerHTML = '<div class="ranking-loading">まだスコアがありません</div>';
+    return;
+  }
+
+  const medals = ['🥇', '🥈', '🥉'];
+  list.innerHTML = deduped.slice(0, 10).map((s, i) => `
+    <div class="ranking-item">
+      <span class="rank-num">${medals[i] || (i + 1)}</span>
+      <span class="rank-name">${escapeHtml(s.name)}</span>
+      <span class="rank-score">${s.score}点</span>
+    </div>
+  `).join('');
+}
+
+// ========== リセット ==========
+function resetGame() {
+  if (resultMap) { resultMap = null; document.getElementById('result-map').innerHTML = ''; }
+  currentMode = 'japan';
+  currentPrefKey = '';
+  localPanoramas = [];
+  document.getElementById('pref-selector').classList.add('hidden');
+  document.getElementById('pref-select').value = '';
+  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+}
+
+// ========== ユーティリティ ==========
+function shuffled(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function haversineDistance(a, b) {
+  const R = 6371;
+  const lat1 = typeof a.lat === 'function' ? a.lat() : a.lat;
+  const lng1 = typeof a.lng === 'function' ? a.lng() : a.lng;
+  const lat2 = typeof b.lat === 'function' ? b.lat() : b.lat;
+  const lng2 = typeof b.lng === 'function' ? b.lng() : b.lng;
+  const dLat = deg2rad(lat2 - lat1);
+  const dLng = deg2rad(lng2 - lng1);
+  const x = Math.sin(dLat/2)**2 + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+}
+
+function deg2rad(d) { return d * Math.PI / 180; }
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
