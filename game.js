@@ -6,8 +6,9 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycby7hjXQSJOlXvU8eDhd6Ip0
 // ========== 設定 ==========
 const TOTAL_ROUNDS = 3;
 const MAX_SCORE_PER_ROUND = 1000;
-const MAX_DISTANCE_KM = 2000;       // 全国モード：2000km 基準
-const MAX_DISTANCE_LOCAL_KM = 3;    // 地元モード：3km 基準（築港エリア想定）
+const MAX_DISTANCE_KM = 2000;        // 全国モード：2000km 基準
+const MAX_DISTANCE_LOCAL_KM = 3;     // 地元モード：3km 基準（築港エリア想定）
+const MAX_DISTANCE_WORLD_KM = 20000; // 世界チャレンジ：地球半周（約20000km）基準
 
 // ========== 全国モード 出題座標リスト（30か所） ==========
 const LOCATIONS = [
@@ -41,6 +42,45 @@ const LOCATIONS = [
   { lat: 33.5553, lng: 130.3788, label: '太宰府天満宮周辺' },
   { lat: 34.3948, lng: 132.3152, label: '宮島 厳島神社周辺' },
   { lat: 35.5023, lng: 134.2353, label: '鳥取砂丘' },
+];
+
+// ========== 世界チャレンジ 出題座標リスト（30か所） ==========
+const WORLD_LOCATIONS = [
+  // ヨーロッパ
+  { lat: 48.8530, lng: 2.3499,   label: 'エッフェル塔周辺（フランス）' },
+  { lat: 41.8902, lng: 12.4922,  label: 'コロッセオ（イタリア）' },
+  { lat: 51.5007, lng: -0.1246,  label: 'ビッグベン周辺（イギリス）' },
+  { lat: 41.4036, lng: 2.1744,   label: 'サグラダ・ファミリア（スペイン）' },
+  { lat: 50.0755, lng: 14.4378,  label: 'プラハ旧市街（チェコ）' },
+  { lat: 48.2082, lng: 16.3738,  label: 'ウィーン（オーストリア）' },
+  { lat: 52.3731, lng: 4.8922,   label: 'アムステルダム（オランダ）' },
+  { lat: 55.7539, lng: 37.6208,  label: '赤の広場（ロシア）' },
+  { lat: 36.3932, lng: 25.4615,  label: 'サントリーニ島（ギリシャ）' },
+  { lat: 43.7230, lng: 10.3966,  label: 'ピサの斜塔（イタリア）' },
+  // アメリカ大陸
+  { lat: 40.7580, lng: -73.9855, label: 'タイムズスクエア（アメリカ）' },
+  { lat: 37.8199, lng: -122.4783,label: 'ゴールデンゲートブリッジ（アメリカ）' },
+  { lat: 25.7617, lng: -80.1918, label: 'マイアミビーチ（アメリカ）' },
+  { lat: -22.9516, lng: -43.2105,label: 'コルコバードの丘（ブラジル）' },
+  { lat: -34.6037, lng: -58.3816,label: 'ブエノスアイレス（アルゼンチン）' },
+  { lat: 19.4326, lng: -99.1332, label: 'メキシコシティ（メキシコ）' },
+  // アジア
+  { lat: 40.4319, lng: 116.5704, label: '万里の長城（中国）' },
+  { lat: 27.1751, lng: 78.0421,  label: 'タージマハル（インド）' },
+  { lat: 13.7563, lng: 100.5018, label: 'バンコク（タイ）' },
+  { lat: 37.5665, lng: 126.9780, label: 'ソウル（韓国）' },
+  { lat: 1.2894,  lng: 103.8500, label: 'シンガポール' },
+  { lat: 25.1972, lng: 55.2744,  label: 'ドバイ（UAE）' },
+  { lat: 41.0082, lng: 28.9784,  label: 'イスタンブール（トルコ）' },
+  { lat: 13.4125, lng: 103.8670, label: 'アンコールワット（カンボジア）' },
+  // アフリカ・中東
+  { lat: 30.0444, lng: 31.2357,  label: 'カイロ（エジプト）' },
+  { lat: -33.9249, lng: 18.4241, label: 'ケープタウン（南アフリカ）' },
+  { lat: -1.2921, lng: 36.8219,  label: 'ナイロビ（ケニア）' },
+  // オセアニア・その他
+  { lat: -33.8568, lng: 151.2153,label: 'シドニー・オペラハウス（オーストラリア）' },
+  { lat: 64.1466, lng: -21.9426, label: 'レイキャビク（アイスランド）' },
+  { lat: -13.1631, lng: -72.5450,label: 'マチュピチュ（ペルー）' },
 ];
 
 // ========== カスタムエリア（学校・地域指定） ==========
@@ -106,10 +146,11 @@ const PREFECTURES = {
 // ========== 状態 ==========
 let panorama, answerMap, answerMarker, resultMap, svService;
 let playerName = '';
-let currentMode = 'japan'; // 'japan' | 'local'
+let currentMode = 'japan'; // 'japan' | 'local' | 'world'
 let currentPrefKey = '';
 let currentRound = 0;
 let currentLocation = null; // { lat, lng } または LatLng
+let currentLocationLabel = ''; // 世界モード用：正解地名
 let totalScore = 0;
 let roundOrder = [];
 let localPanoramas = []; // 地元モードで収集した座標
@@ -173,6 +214,11 @@ window.initGame = function () {
     startGame();
   });
 
+  document.getElementById('mode-world').addEventListener('click', () => {
+    selectMode('world');
+    startGame();
+  });
+
   // ゲーム内
   document.getElementById('btn-submit').addEventListener('click', onSubmit);
 
@@ -182,7 +228,7 @@ window.initGame = function () {
   // 最終結果
   document.getElementById('btn-submit-score').addEventListener('click', submitScore);
   document.getElementById('btn-skip-score').addEventListener('click', () => {
-    const tab = currentMode === 'local' ? 'local' : 'nationwide';
+    const tab = currentMode === 'local' ? 'local' : currentMode === 'world' ? 'world' : 'nationwide';
     showRanking(tab);
   });
 
@@ -201,8 +247,9 @@ window.initGame = function () {
 function selectMode(mode) {
   currentMode = mode;
   document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
-  document.getElementById(mode === 'japan' ? 'mode-japan' : 'mode-local').classList.add('selected');
-  if (mode === 'japan') {
+  const cardId = mode === 'japan' ? 'mode-japan' : mode === 'world' ? 'mode-world' : 'mode-local';
+  document.getElementById(cardId).classList.add('selected');
+  if (mode !== 'local') {
     document.getElementById('pref-selector').classList.add('hidden');
   }
 }
@@ -216,14 +263,15 @@ function startGame() {
   initMaps();
   updateHeader();
 
-  if (currentMode === 'japan') {
-    roundOrder = shuffled([...Array(LOCATIONS.length).keys()]).slice(0, TOTAL_ROUNDS);
-    showScreen('screen-game');
-    loadRound();
-  } else {
+  if (currentMode === 'local') {
     // 地元モード：先に全問分のパノラマを探す
     showScreen('screen-loading');
     collectLocalPanoramas(0);
+  } else {
+    const locs = currentMode === 'world' ? WORLD_LOCATIONS : LOCATIONS;
+    roundOrder = shuffled([...Array(locs.length).keys()]).slice(0, TOTAL_ROUNDS);
+    showScreen('screen-game');
+    loadRound();
   }
 }
 
@@ -247,16 +295,28 @@ function collectLocalPanoramas(count) {
 }
 
 // ========== 地域内ランダムパノラマ探索 ==========
+// links が2本以上ある屋外パノラマのみ採用（行き止まり・屋内・店内を除外）
+const MIN_LINKS = 2;
+
 function findPanoramaInRegion(region, attempts, callback) {
-  if (attempts >= 20) { callback(null); return; }
+  if (attempts >= 30) { callback(null); return; }
   const lat = region.south + Math.random() * (region.north - region.south);
   const lng = region.west  + Math.random() * (region.east  - region.west);
   const radius = region.searchRadius || 10000;
   svService.getPanorama(
     { location: { lat, lng }, radius, source: google.maps.StreetViewSource.OUTDOOR },
     (data, status) => {
-      if (status === 'OK') callback(data.location.latLng);
-      else findPanoramaInRegion(region, attempts + 1, callback);
+      if (status === 'OK') {
+        const links = data.links || [];
+        if (links.length >= MIN_LINKS) {
+          callback(data.location.latLng);
+        } else {
+          // 移動できる方向が少なすぎる（行き止まり・屋内）→ 再試行
+          findPanoramaInRegion(region, attempts + 1, callback);
+        }
+      } else {
+        findPanoramaInRegion(region, attempts + 1, callback);
+      }
     }
   );
 }
@@ -337,17 +397,55 @@ function loadRound() {
   document.getElementById('btn-submit').disabled = true;
   document.getElementById('total-score').textContent = totalScore;
   buildRoundDots();
+  resetAnswerMapView();
 
-  if (currentMode === 'japan') {
-    const idx = roundOrder[currentRound];
-    const loc = LOCATIONS[idx];
-    currentLocation = new google.maps.LatLng(loc.lat, loc.lng);
-  } else {
+  if (currentMode === 'local') {
     currentLocation = localPanoramas[currentRound];
+    panorama.setPosition(currentLocation);
+    panorama.setPov({ heading: Math.random() * 360, pitch: 0 });
+  } else {
+    const locs = currentMode === 'world' ? WORLD_LOCATIONS : LOCATIONS;
+    tryLoadFixedRound(locs, roundOrder[currentRound], 0);
   }
+}
 
-  panorama.setPosition(currentLocation);
-  panorama.setPov({ heading: Math.random() * 360, pitch: 0 });
+// 固定リストモード（全国・世界）：リンク数が足りない場所は次の候補にスキップ
+function tryLoadFixedRound(locs, idx, tries) {
+  const loc = locs[idx % locs.length];
+  const radius = currentMode === 'world' ? 500 : 100;
+  svService.getPanorama(
+    { location: { lat: loc.lat, lng: loc.lng }, radius, source: google.maps.StreetViewSource.OUTDOOR },
+    (data, status) => {
+      if (status === 'OK' && (data.links || []).length >= MIN_LINKS) {
+        currentLocation = data.location.latLng;
+        currentLocationLabel = currentMode === 'world' ? loc.label : '';
+        panorama.setPosition(currentLocation);
+        panorama.setPov({ heading: Math.random() * 360, pitch: 0 });
+      } else if (tries < 5) {
+        tryLoadFixedRound(locs, idx + 1, tries + 1);
+      } else {
+        currentLocation = new google.maps.LatLng(loc.lat, loc.lng);
+        currentLocationLabel = currentMode === 'world' ? loc.label : '';
+        panorama.setPosition(currentLocation);
+        panorama.setPov({ heading: Math.random() * 360, pitch: 0 });
+      }
+    }
+  );
+}
+
+// 回答マップをモードに合ったビューにリセット
+function resetAnswerMapView() {
+  if (!answerMap) return;
+  if (currentMode === 'local') {
+    answerMap.setCenter({ lat: 34.6544, lng: 135.4371 });
+    answerMap.setZoom(14);
+  } else if (currentMode === 'world') {
+    answerMap.setCenter({ lat: 20, lng: 0 });
+    answerMap.setZoom(2);
+  } else {
+    answerMap.setCenter({ lat: 36.5, lng: 137.0 });
+    answerMap.setZoom(5);
+  }
 }
 
 // ========== 解答決定 ==========
@@ -363,9 +461,13 @@ function onSubmit() {
 
 // ========== スコア計算 ==========
 function calcScore(distanceKm) {
-  const maxDist = currentMode === 'local' ? MAX_DISTANCE_LOCAL_KM : MAX_DISTANCE_KM;
+  const maxDist = currentMode === 'local' ? MAX_DISTANCE_LOCAL_KM
+                : currentMode === 'world' ? MAX_DISTANCE_WORLD_KM
+                : MAX_DISTANCE_KM;
+  // 世界モードは4乗で急峻な曲線（遠いほど大幅減点）
+  const exp = currentMode === 'world' ? 4 : 2;
   if (distanceKm >= maxDist) return 0;
-  return Math.round(MAX_SCORE_PER_ROUND * Math.pow(1 - distanceKm / maxDist, 2));
+  return Math.round(MAX_SCORE_PER_ROUND * Math.pow(1 - distanceKm / maxDist, exp));
 }
 
 // ========== 1問結果画面 ==========
@@ -382,6 +484,13 @@ function showResultScreen(distanceKm, roundScore, playerLatLng, correctLatLng) {
   document.getElementById('result-medal').textContent = medal;
   document.getElementById('result-distance').textContent = `距離: ${distStr}`;
   document.getElementById('result-score-msg').textContent = `+${roundScore}点（合計: ${totalScore}点）`;
+
+  // 世界モード：正解地名を表示
+  const labelEl = document.getElementById('result-location-label');
+  if (labelEl) {
+    labelEl.textContent = currentLocationLabel ? `📍 ${currentLocationLabel}` : '';
+    labelEl.style.display = currentLocationLabel ? '' : 'none';
+  }
 
   const isLast = currentRound >= TOTAL_ROUNDS - 1;
   document.getElementById('btn-next').textContent = isLast ? '結果を見る！' : '次の問題へ →';
@@ -436,6 +545,10 @@ function showFinalScreen() {
   const gasArea = document.getElementById('gas-submit-area');
   const gasStatus = document.getElementById('gas-status');
   gasArea.style.display = GAS_URL ? '' : 'none';
+  // 2回目以降のプレイでボタンをリセット
+  const submitBtn = document.getElementById('btn-submit-score');
+  submitBtn.disabled = false;
+  submitBtn.textContent = '登録する！';
   gasStatus.classList.add('hidden');
   gasStatus.textContent = '';
 
@@ -481,15 +594,16 @@ async function submitScore() {
       body: JSON.stringify({
         name: playerName,
         score: totalScore,
-        mode: currentMode === 'local' ? (CUSTOM_REGIONS[currentPrefKey]?.name || PREFECTURES[currentPrefKey]?.name) : '全国',
+        mode: currentMode === 'local' ? (CUSTOM_REGIONS[currentPrefKey]?.name || PREFECTURES[currentPrefKey]?.name)
+            : currentMode === 'world' ? '世界' : '全国',
       }),
     });
     status.textContent = '✅ 登録しました！';
-    const tab = currentMode === 'local' ? 'local' : 'nationwide';
+    const tab = currentMode === 'local' ? 'local' : currentMode === 'world' ? 'world' : 'nationwide';
     setTimeout(() => showRanking(tab), 1000);
   } catch (e) {
     status.textContent = '❌ 送信に失敗しました。スキップします。';
-    const tab = currentMode === 'local' ? 'local' : 'nationwide';
+    const tab = currentMode === 'local' ? 'local' : currentMode === 'world' ? 'world' : 'nationwide';
     setTimeout(() => showRanking(tab), 1500);
   }
 }
@@ -535,9 +649,11 @@ async function showRanking(tabMode) {
 function renderRanking(scores, tabMode) {
   const list = document.getElementById('ranking-list');
 
-  // モードでフィルタ（全国 or 地元）
-  const isLocal = tabMode === 'local';
-  let filtered = scores.filter(s => isLocal ? s.mode !== '全国' : s.mode === '全国');
+  // モードでフィルタ（全国 / 地元 / 世界）
+  let filtered;
+  if (tabMode === 'world')      filtered = scores.filter(s => s.mode === '世界');
+  else if (tabMode === 'local') filtered = scores.filter(s => s.mode !== '全国' && s.mode !== '世界');
+  else                          filtered = scores.filter(s => s.mode === '全国');
 
   // 同一人物の重複排除：名前ごとに最高スコアのみ残す
   const best = {};

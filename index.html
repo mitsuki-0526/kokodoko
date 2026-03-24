@@ -118,6 +118,11 @@
           <span class="mode-desc">みんなのよく知る地元から出題！</span>
         </button>
       </div>
+      <button class="mode-card mode-card--world" id="mode-world">
+        <span class="mode-icon">🌍</span>
+        <span class="mode-label">世界チャレンジ</span>
+        <span class="mode-desc">地理が得意な人向け！世界中から出題！</span>
+      </button>
       <!-- 地元モード時の都道府県選択 -->
       <div id="pref-selector" class="pref-selector hidden">
         <select id="pref-select" class="pref-select">
@@ -214,6 +219,7 @@
       <div id="result-medal" class="result-medal"></div>
       <h2 id="result-distance" class="result-distance"></h2>
       <p id="result-score-msg" class="result-score-msg"></p>
+      <p id="result-location-label" class="result-location-label" style="display:none"></p>
       <div id="result-map"></div>
       <button id="btn-next" class="btn btn-primary"></button>
     </div>
@@ -243,8 +249,9 @@
     <div class="ranking-content">
       <h2 class="ranking-title">🏆 ランキング</h2>
       <div class="ranking-tabs">
-        <button class="ranking-tab active" data-mode="nationwide">🗾 全国モード</button>
-        <button class="ranking-tab" data-mode="local">📍 地元モード</button>
+        <button class="ranking-tab active" data-mode="nationwide">🗾 全国</button>
+        <button class="ranking-tab" data-mode="local">📍 地元</button>
+        <button class="ranking-tab" data-mode="world">🌍 世界</button>
       </div>
       <div id="ranking-list" class="ranking-list"></div>
       <div class="ranking-buttons">

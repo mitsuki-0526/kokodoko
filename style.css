@@ -180,6 +180,22 @@ html, body {
 .mode-label { font-size: 1rem; font-weight: 900; color: #5a3e8a; }
 .mode-desc { font-size: 0.78rem; color: #888; }
 
+/* 世界チャレンジカード：横幅いっぱいの特別カード */
+.mode-card--world {
+  width: 100%;
+  flex-direction: row;
+  justify-content: center;
+  gap: 16px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  border-color: #4fc3f7;
+  color: #fff;
+  padding: 20px 28px;
+}
+.mode-card--world .mode-label { color: #4fc3f7; font-size: 1.1rem; }
+.mode-card--world .mode-desc  { color: rgba(255,255,255,0.7); }
+.mode-card--world:hover { box-shadow: 0 10px 30px rgba(79,195,247,0.35); }
+.mode-card--world.selected { border-color: #4fc3f7; background: linear-gradient(135deg, #0d2137, #1a3a5c); }
+
 .pref-selector {
   display: flex; flex-direction: column; gap: 12px;
   animation: fadeInUp 0.3s ease;
@@ -327,6 +343,15 @@ html, body {
   font-size: 1.2rem; color: rgba(255,255,255,0.9);
   background: rgba(255,255,255,0.2);
   padding: 8px 24px; border-radius: 20px;
+}
+
+.result-location-label {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #fff;
+  background: rgba(0,0,0,0.25);
+  padding: 8px 20px;
+  border-radius: 20px;
 }
 
 #result-map {
