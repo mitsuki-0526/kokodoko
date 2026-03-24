@@ -3,8 +3,8 @@
 // ========== Google Identity Services 設定 ==========
 const GSI_CLIENT_ID = '954206939501-gqjp1k3fn9jpaovnuhlshje5olcpn5mv.apps.googleusercontent.com';
 
-// ========== GAS URL（ランキング使用時はここに貼る） ==========
-const GAS_URL = 'https://script.google.com/macros/s/AKfycby7hjXQSJOlXvU8eDhd6Ip0rwW5o2MRtqWKOmo5RnRHOPGin9muGVnKFe0-x7HcCEUC/exec';
+// ========== 教育用GAS URL ==========
+const EDU_GAS_URL = 'https://script.google.com/a/macros/oskedu.jp/s/AKfycbxbTQ6tVrySnF4sGy5ZNTcA0c7kAlXJixQPfKX-tpSpYTokTH0ODyG7VvSJo2uO1bLI6g/exec';
 
 // ========== 設定 ==========
 const TOTAL_ROUNDS = 3;
@@ -625,7 +625,7 @@ function showFinalScreen() {
 
   const gasArea = document.getElementById('gas-submit-area');
   const gasStatus = document.getElementById('gas-status');
-  gasArea.style.display = GAS_URL ? '' : 'none';
+  gasArea.style.display = EDU_GAS_URL ? '' : 'none';
   // 2回目以降のプレイでボタンをリセット
   const submitBtn = document.getElementById('btn-submit-score');
   submitBtn.disabled = false;
@@ -656,109 +656,73 @@ function getFinalMedal(score) {
   return '📍';
 }
 
-// ========== GAS スコア送信 ==========
-async function submitScore() {
-  if (!GAS_URL) { showRanking(); return; }
-
-  const btn = document.getElementById('btn-submit-score');
+// ========== スコア送信（教育用GASへwindow.open） ==========
+function submitScore() {
+  const btn    = document.getElementById('btn-submit-score');
   const status = document.getElementById('gas-status');
-  btn.disabled = true;
-  btn.textContent = '送信中…';
-  status.classList.remove('hidden');
-  status.textContent = '⏳ 送信中です…';
+  const modeStr = currentMode === 'local' ? '地元'
+                : currentMode === 'world' ? '世界' : '全国';
 
-  try {
-    await fetch(GAS_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: playerName,
-        score: totalScore,
-        mode: currentMode === 'local' ? (CUSTOM_REGIONS[currentPrefKey]?.name || PREFECTURES[currentPrefKey]?.name)
-            : currentMode === 'world' ? '世界' : '全国',
-      }),
-    });
-    status.textContent = '✅ 登録しました！';
-    const tab = currentMode === 'local' ? 'local' : currentMode === 'world' ? 'world' : 'nationwide';
-    setTimeout(() => showRanking(tab), 1000);
-  } catch (e) {
-    status.textContent = '❌ 送信に失敗しました。スキップします。';
-    const tab = currentMode === 'local' ? 'local' : currentMode === 'world' ? 'world' : 'nationwide';
-    setTimeout(() => showRanking(tab), 1500);
-  }
+  const url = EDU_GAS_URL
+    + '?action=submit'
+    + '&name='  + encodeURIComponent(playerName)
+    + '&score=' + encodeURIComponent(totalScore)
+    + '&mode='  + encodeURIComponent(modeStr);
+
+  window.open(url, '_blank');
+
+  btn.disabled    = true;
+  btn.textContent = '登録済み ✅';
+  status.classList.remove('hidden');
+  status.textContent = '✅ 登録しました！別タブが自動で閉じます';
+
+  const tab = currentMode === 'local' ? 'local' : currentMode === 'world' ? 'world' : 'nationwide';
+  setTimeout(() => showRanking(tab), 1500);
 }
 
-// ========== ランキング表示 ==========
-let allRankingData = null; // 取得済みデータをキャッシュ
-
-async function showRanking(tabMode, fromTitle = false) {
+// ========== ランキング画面表示 ==========
+function showRanking(tabMode, fromTitle = false) {
   showScreen('screen-ranking');
-
-  // タイトルから開いた場合は「もう一度あそぶ！」を非表示
   document.getElementById('btn-retry').style.display = fromTitle ? 'none' : '';
 
-  // タブの初期選択
   const activeTab = tabMode || 'nationwide';
   document.querySelectorAll('.ranking-tab').forEach(t => {
     t.classList.toggle('active', t.dataset.mode === activeTab);
-  });
-
-  // タブクリックで切り替え
-  document.querySelectorAll('.ranking-tab').forEach(tab => {
-    tab.onclick = () => {
-      document.querySelectorAll('.ranking-tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      if (allRankingData) renderRanking(allRankingData, tab.dataset.mode);
+    t.onclick = () => {
+      document.querySelectorAll('.ranking-tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      renderOpenButton(t.dataset.mode);
     };
   });
 
-  const list = document.getElementById('ranking-list');
-  list.innerHTML = '<div class="ranking-loading">読み込み中…</div>';
-
-  if (!GAS_URL) {
-    list.innerHTML = '<div class="ranking-loading">ランキングを使うには<br>GAS URLを設定してください</div>';
-    return;
-  }
-
-  try {
-    const res = await fetch(GAS_URL + '?action=ranking');
-    allRankingData = await res.json();
-    renderRanking(allRankingData, activeTab);
-  } catch {
-    list.innerHTML = '<div class="ranking-loading">ランキングの取得に失敗しました</div>';
-  }
+  renderOpenButton(activeTab);
 }
 
-function renderRanking(scores, tabMode) {
-  const list = document.getElementById('ranking-list');
+// ランキングを開くボタンをリスト欄に表示
+function renderOpenButton(tabMode) {
+  const modeLabel = { nationwide: '全国', local: '地元', world: '世界' };
+  const label = modeLabel[tabMode] || '全国';
+  document.getElementById('ranking-list').innerHTML = `
+    <div style="text-align:center;padding:28px 0">
+      <p style="color:#fff;opacity:0.85;margin-bottom:18px;font-size:0.95rem">
+        ランキングは別タブで開きます
+      </p>
+      <button class="btn btn-primary"
+        style="width:auto;padding:12px 36px;font-size:1rem"
+        onclick="openRankingTab('${tabMode}')">
+        🏆 ${label}ランキングを開く
+      </button>
+    </div>`;
+}
 
-  // モードでフィルタ（全国 / 地元 / 世界）
-  let filtered;
-  if (tabMode === 'world')      filtered = scores.filter(s => s.mode === '世界');
-  else if (tabMode === 'local') filtered = scores.filter(s => s.mode !== '全国' && s.mode !== '世界');
-  else                          filtered = scores.filter(s => s.mode === '全国');
-
-  // 同一人物の重複排除：名前ごとに最高スコアのみ残す
-  const best = {};
-  filtered.forEach(s => {
-    if (!best[s.name] || s.score > best[s.name].score) best[s.name] = s;
-  });
-  const deduped = Object.values(best).sort((a, b) => b.score - a.score);
-
-  if (deduped.length === 0) {
-    list.innerHTML = '<div class="ranking-loading">まだスコアがありません</div>';
-    return;
-  }
-
-  const medals = ['🥇', '🥈', '🥉'];
-  list.innerHTML = deduped.slice(0, 10).map((s, i) => `
-    <div class="ranking-item">
-      <span class="rank-num">${medals[i] || (i + 1)}</span>
-      <span class="rank-name">${escapeHtml(s.name)}</span>
-      <span class="rank-score">${s.score}点</span>
-    </div>
-  `).join('');
+// 教育用GASのランキングページを別タブで開く
+function openRankingTab(tabMode) {
+  const modeLabel = { nationwide: '全国', local: '地元', world: '世界' };
+  const modeStr = modeLabel[tabMode] || '全国';
+  window.open(
+    EDU_GAS_URL + '?action=ranking&mode=' + encodeURIComponent(modeStr),
+    '_blank'
+  );
 }
 
 // ========== リセット ==========
