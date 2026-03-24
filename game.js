@@ -1,5 +1,8 @@
 'use strict';
 
+// ========== Google Identity Services 設定 ==========
+const GSI_CLIENT_ID = '954206939501-gqjp1k3fn9jpaovnuhlshje5olcpn5mv.apps.googleusercontent.com';
+
 // ========== GAS URL（ランキング使用時はここに貼る） ==========
 const GAS_URL = 'https://script.google.com/macros/s/AKfycby7hjXQSJOlXvU8eDhd6Ip0rwW5o2MRtqWKOmo5RnRHOPGin9muGVnKFe0-x7HcCEUC/exec';
 
@@ -143,6 +146,80 @@ const PREFECTURES = {
   okinawa:   { name: '沖縄県', north: 26.9, south: 24.0, east: 128.3, west: 122.9 },
 };
 
+// ========== Google Identity Services 認証 ==========
+// ログイン情報はsessionStorageのみに保存（タブを閉じると消える）
+let gsiTokenClient = null;
+let currentUser    = null; // { displayName, email }
+
+// メールのローカルパートで先生・生徒を判別
+// 先生: eで始まる / 生徒: 数字で始まる
+function isTeacher(email) { return /^e/i.test(email.split('@')[0]); }
+function isStudent(email)  { return /^\d/.test(email.split('@')[0]); }
+
+// GSI初期化（Maps APIロード後に呼ぶ）
+function initGSI() {
+  if (typeof google === 'undefined' || !google.accounts) return;
+  gsiTokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: GSI_CLIENT_ID,
+    scope: 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
+    callback: async (tokenResponse) => {
+      if (tokenResponse.error) {
+        document.getElementById('login-error').textContent = 'ログインに失敗しました。';
+        return;
+      }
+      try {
+        const res  = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: 'Bearer ' + tokenResponse.access_token }
+        });
+        const info = await res.json();
+        // sessionStorageに保存（ブラウザのみ・外部DB不使用）
+        sessionStorage.setItem('gsi_name',  info.name  || '');
+        sessionStorage.setItem('gsi_email', info.email || '');
+        currentUser = { displayName: info.name, email: info.email };
+        onLoginSuccess(currentUser);
+      } catch {
+        document.getElementById('login-error').textContent = 'ユーザー情報の取得に失敗しました。';
+      }
+    },
+  });
+}
+
+// Googleログイン実行（ポップアップ）
+function signInWithGoogle() {
+  if (!gsiTokenClient) {
+    document.getElementById('login-error').textContent = 'しばらく待ってから再試行してください。';
+    return;
+  }
+  document.getElementById('login-error').textContent = '';
+  gsiTokenClient.requestAccessToken({ prompt: 'select_account' });
+}
+
+// ログイン成功後の振り分け
+function onLoginSuccess(user) {
+  const email = user.email || '';
+  if (isTeacher(email)) {
+    // 先生 → 名前確認・編集画面へ
+    document.getElementById('teacher-name-input').value = user.displayName || '';
+    document.getElementById('teacher-name-error').textContent = '';
+    showScreen('screen-teacher-name');
+  } else {
+    // 生徒 → Google表示名をそのまま使用
+    playerName = user.displayName || email;
+    showScreen('screen-mode');
+  }
+}
+
+// セッション復元（ページリロード時）
+function restoreSession() {
+  const name  = sessionStorage.getItem('gsi_name');
+  const email = sessionStorage.getItem('gsi_email');
+  if (name && email) {
+    currentUser = { displayName: name, email };
+    return true;
+  }
+  return false;
+}
+
 // ========== 状態 ==========
 let panorama, answerMap, answerMarker, resultMap, svService;
 let playerName = '';
@@ -168,39 +245,43 @@ function showScreen(id) {
 // ========== Google Maps API 初期化コールバック ==========
 window.initGame = function () {
   svService = new google.maps.StreetViewService();
+  initGSI();
 
-  // タイトル → 名前入力
-  document.getElementById('btn-to-name').addEventListener('click', () => showScreen('screen-name'));
+  // タイトル → ログイン画面（セッション復元チェック）
+  document.getElementById('btn-to-name').addEventListener('click', () => {
+    if (restoreSession()) {
+      // セッション有効 → 直接振り分け
+      onLoginSuccess(currentUser);
+    } else {
+      document.getElementById('login-error').textContent = '';
+      showScreen('screen-login');
+    }
+  });
 
-  // 名前入力 → タイトルに戻る
-  document.getElementById('btn-name-back').addEventListener('click', () => showScreen('screen-title'));
+  // ログイン画面
+  document.getElementById('btn-google-login').addEventListener('click', signInWithGoogle);
+  document.getElementById('btn-login-back').addEventListener('click', () => showScreen('screen-title'));
+
+  // 先生用名前確認画面
+  document.getElementById('btn-teacher-ok').addEventListener('click', () => {
+    const name = document.getElementById('teacher-name-input').value.trim();
+    if (!name) {
+      document.getElementById('teacher-name-error').textContent = '名前を入力してください';
+      return;
+    }
+    playerName = name;
+    showScreen('screen-mode');
+  });
+  document.getElementById('btn-teacher-back').addEventListener('click', () => {
+    // ログアウト：sessionStorageを削除
+    sessionStorage.removeItem('gsi_name');
+    sessionStorage.removeItem('gsi_email');
+    currentUser = null;
+    showScreen('screen-title');
+  });
 
   // タイトル → ランキング確認
   document.getElementById('btn-view-ranking').addEventListener('click', () => showRanking('nationwide', true));
-
-  // 年・組・番ドロップダウン → ボタンの有効化
-  const selYear  = document.getElementById('sel-year');
-  const selClass = document.getElementById('sel-class');
-  const selNum   = document.getElementById('sel-num');
-  const btnToMode = document.getElementById('btn-to-mode');
-
-  function updateNameButton() {
-    btnToMode.disabled = !(selYear.value && selClass.value && selNum.value);
-  }
-  selYear.addEventListener('change', updateNameButton);
-  selClass.addEventListener('change', updateNameButton);
-  selNum.addEventListener('change', updateNameButton);
-
-  // 名前入力 → モード選択
-  btnToMode.addEventListener('click', () => {
-    if (!selYear.value || !selClass.value || !selNum.value) {
-      document.getElementById('name-error').textContent = '年・組・番をすべて選んでね！';
-      return;
-    }
-    playerName = `${selYear.value}年${selClass.value}組${selNum.value}番`;
-    document.getElementById('name-error').textContent = '';
-    showScreen('screen-mode');
-  });
 
   // モード選択
   document.getElementById('mode-japan').addEventListener('click', () => {

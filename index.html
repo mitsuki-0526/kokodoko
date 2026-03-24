@@ -19,84 +19,32 @@
     </div>
   </div>
 
-  <!-- 名前入力画面 -->
-  <div id="screen-name" class="screen">
+  <!-- ログイン画面 -->
+  <div id="screen-login" class="screen">
     <div class="card-screen">
-      <div class="card-icon">✏️</div>
-      <h2 class="card-title">じぶんを選んでね</h2>
-      <div class="selector-row">
-        <div class="selector-group">
-          <label class="selector-label">年</label>
-          <select id="sel-year" class="pref-select selector-sel">
-            <option value="">－</option>
-            <option value="1">1年</option>
-            <option value="2">2年</option>
-            <option value="3">3年</option>
-          </select>
-        </div>
-        <div class="selector-group">
-          <label class="selector-label">組</label>
-          <select id="sel-class" class="pref-select selector-sel">
-            <option value="">－</option>
-            <option value="1">1組</option>
-            <option value="2">2組</option>
-            <option value="3">3組</option>
-            <option value="4">4組</option>
-            <option value="5">5組</option>
-            <option value="6">6組</option>
-          </select>
-        </div>
-        <div class="selector-group">
-          <label class="selector-label">番</label>
-          <select id="sel-num" class="pref-select selector-sel">
-            <option value="">－</option>
-            <option value="1">1番</option>
-            <option value="2">2番</option>
-            <option value="3">3番</option>
-            <option value="4">4番</option>
-            <option value="5">5番</option>
-            <option value="6">6番</option>
-            <option value="7">7番</option>
-            <option value="8">8番</option>
-            <option value="9">9番</option>
-            <option value="10">10番</option>
-            <option value="11">11番</option>
-            <option value="12">12番</option>
-            <option value="13">13番</option>
-            <option value="14">14番</option>
-            <option value="15">15番</option>
-            <option value="16">16番</option>
-            <option value="17">17番</option>
-            <option value="18">18番</option>
-            <option value="19">19番</option>
-            <option value="20">20番</option>
-            <option value="21">21番</option>
-            <option value="22">22番</option>
-            <option value="23">23番</option>
-            <option value="24">24番</option>
-            <option value="25">25番</option>
-            <option value="26">26番</option>
-            <option value="27">27番</option>
-            <option value="28">28番</option>
-            <option value="29">29番</option>
-            <option value="30">30番</option>
-            <option value="31">31番</option>
-            <option value="32">32番</option>
-            <option value="33">33番</option>
-            <option value="34">34番</option>
-            <option value="35">35番</option>
-            <option value="36">36番</option>
-            <option value="37">37番</option>
-            <option value="38">38番</option>
-            <option value="39">39番</option>
-            <option value="40">40番</option>
-          </select>
-        </div>
-      </div>
-      <p id="name-error" class="error-msg"></p>
+      <div class="card-icon">🏫</div>
+      <h2 class="card-title">ログイン</h2>
+      <p class="card-sub">学校のGoogleアカウントで<br>ログインしてください</p>
+      <button id="btn-google-login" class="btn btn-google">
+        <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Googleでログイン
+      </button>
+      <p id="login-error" class="error-msg"></p>
+      <button id="btn-login-back" class="btn btn-secondary" style="margin-top:10px">タイトルに戻る</button>
+    </div>
+  </div>
+
+  <!-- 先生用名前確認画面 -->
+  <div id="screen-teacher-name" class="screen">
+    <div class="card-screen">
+      <div class="card-icon">👨‍🏫</div>
+      <h2 class="card-title">名前の確認</h2>
+      <p class="card-sub">ランキングに表示される名前を<br>確認・変更できます</p>
+      <input type="text" id="teacher-name-input" class="name-input" maxlength="20">
+      <p id="teacher-name-error" class="error-msg"></p>
       <div style="display:flex;flex-direction:column;gap:10px;width:100%">
-        <button id="btn-to-mode" class="btn btn-primary" disabled>つぎへ →</button>
-        <button id="btn-name-back" class="btn btn-secondary">タイトルに戻る</button>
+        <button id="btn-teacher-ok" class="btn btn-primary">この名前で始める →</button>
+        <button id="btn-teacher-back" class="btn btn-secondary">タイトルに戻る</button>
       </div>
     </div>
   </div>
@@ -261,6 +209,8 @@
     </div>
   </div>
 
+  <!-- Google Identity Services（無料・Firebaseなし） -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDQdx0rWjR97O2T_pkyd0tNRpG6APMgR7w&callback=initGame&loading=async"></script>
   <script src="game.js"></script>
 </body>
