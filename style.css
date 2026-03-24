@@ -93,8 +93,49 @@ html, body {
   margin-bottom: 28px;
 }
 
-/* ========== 名前入力画面 ========== */
-#screen-name { background: linear-gradient(160deg, #a18cd1 0%, #fbc2eb 100%); }
+/* ========== ログイン・名前確認画面 ========== */
+#screen-login        { background: linear-gradient(160deg, #a18cd1 0%, #fbc2eb 100%); }
+#screen-teacher-name { background: linear-gradient(160deg, #a18cd1 0%, #fbc2eb 100%); }
+#screen-name         { background: linear-gradient(160deg, #a18cd1 0%, #fbc2eb 100%); }
+
+.card-sub {
+  color: #7a5a9a;
+  font-size: 0.95rem;
+  text-align: center;
+  margin: 4px 0 20px;
+  line-height: 1.6;
+}
+
+/* Googleログインボタン */
+.btn-google {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 280px;
+  margin: 0 auto;
+  padding: 12px 20px;
+  background: #fff;
+  color: #444;
+  border: 2px solid #ddd;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: box-shadow 0.2s, border-color 0.2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.btn-google:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  border-color: #bbb;
+}
+.google-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
 
 .name-input {
   width: 100%;
