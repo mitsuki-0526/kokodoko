@@ -176,7 +176,7 @@ window.initGame = function () {
   document.getElementById('btn-name-back').addEventListener('click', () => showScreen('screen-title'));
 
   // タイトル → ランキング確認
-  document.getElementById('btn-view-ranking').addEventListener('click', () => showRanking('nationwide'));
+  document.getElementById('btn-view-ranking').addEventListener('click', () => showRanking('nationwide', true));
 
   // 年・組・番ドロップダウン → ボタンの有効化
   const selYear  = document.getElementById('sel-year');
@@ -611,8 +611,11 @@ async function submitScore() {
 // ========== ランキング表示 ==========
 let allRankingData = null; // 取得済みデータをキャッシュ
 
-async function showRanking(tabMode) {
+async function showRanking(tabMode, fromTitle = false) {
   showScreen('screen-ranking');
+
+  // タイトルから開いた場合は「もう一度あそぶ！」を非表示
+  document.getElementById('btn-retry').style.display = fromTitle ? 'none' : '';
 
   // タブの初期選択
   const activeTab = tabMode || 'nationwide';
