@@ -418,19 +418,24 @@ html, body {
 .ranking-tab {
   flex: 1;
   padding: 10px 0;
-  border: 2px solid rgba(255,255,255,0.6);
+  border: 2px solid rgba(255,255,255,0.9);
   border-radius: 24px;
-  background: rgba(255,255,255,0.15);
-  color: rgba(255,255,255,0.8);
+  background: rgba(0,0,0,0.18);
+  color: #fff;
   font-size: 0.95rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.ranking-tab:hover {
+  background: rgba(0,0,0,0.28);
 }
 .ranking-tab.active {
   background: #fff;
   color: #7c3aed;
   border-color: #fff;
+  text-shadow: none;
 }
 .ranking-loading {
   text-align: center;
