@@ -412,17 +412,17 @@ html, body {
 
 .ranking-tabs {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   margin: 12px 0 8px;
 }
 .ranking-tab {
   flex: 1;
-  padding: 10px 0;
+  padding: 14px 8px;
   border: 2px solid rgba(255,255,255,0.9);
-  border-radius: 24px;
+  border-radius: 28px;
   background: rgba(0,0,0,0.18);
   color: #fff;
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
