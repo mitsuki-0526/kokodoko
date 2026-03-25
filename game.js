@@ -594,6 +594,9 @@ function initMaps() {
     }
   );
 
+  // タイルが読み込まれたらオーバーレイを非表示
+  panorama.addListener('tiles_loaded', () => showSvLoading(false));
+
   // 地元モードは大阪港駅中心・ズーム14、全国モードは日本全体
   const mapCenter = currentMode === 'local'
     ? { lat: 34.6544, lng: 135.4371 }
@@ -648,6 +651,16 @@ function buildRoundDots() {
 }
 
 // ========== 問題読み込み ==========
+function showSvLoading(visible) {
+  const el = document.getElementById('sv-loading');
+  if (!el) return;
+  if (visible) {
+    el.classList.remove('hidden');
+  } else {
+    el.classList.add('hidden');
+  }
+}
+
 function loadRound() {
   if (answerMarker) { answerMarker.setMap(null); answerMarker = null; }
   document.getElementById('btn-submit').disabled = true;
@@ -655,12 +668,14 @@ function loadRound() {
   buildRoundDots();
   resetAnswerMapView();
 
+  // 新しい問題の読み込み中はオーバーレイを表示
+  showSvLoading(true);
+
   if (currentMode === 'local') {
     const entry = localPanoramas[currentRound];
     currentLocation = entry.latLng;
     startPov = { heading: Math.random() * 360, pitch: 0 };
     startLocation = currentLocation;
-    // panoIdがある場合はsetPanoで正確に指定（屋内スナップを防止）
     if (entry.pano) {
       panorama.setPano(entry.pano);
     } else {

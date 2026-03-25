@@ -360,6 +360,40 @@ html, body {
   background: rgba(0, 0, 0, 0.85);
 }
 
+/* StreetView ローディングオーバーレイ */
+.sv-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  background: #1a1a2e;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  transition: opacity 0.3s;
+}
+.sv-loading.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.sv-loading-spinner {
+  width: 52px;
+  height: 52px;
+  border: 5px solid rgba(255,255,255,0.15);
+  border-top-color: #a78bfa;
+  border-radius: 50%;
+  animation: sv-spin 0.9s linear infinite;
+}
+@keyframes sv-spin {
+  to { transform: rotate(360deg); }
+}
+.sv-loading-text {
+  color: rgba(255,255,255,0.6);
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+}
+
 .map-panel {
   width: 360px;
   flex-shrink: 0;
