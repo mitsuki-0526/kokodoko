@@ -317,7 +317,7 @@ window.initGame = function () {
   // ランキング画面
   document.getElementById('btn-retry').addEventListener('click', () => {
     resetGame();
-    showScreen('screen-name');
+    showScreen('screen-mode');
   });
   document.getElementById('btn-back-title').addEventListener('click', () => {
     resetGame();
