@@ -321,6 +321,20 @@ html, body {
   white-space: nowrap;
 }
 
+.btn-fullscreen {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  line-height: 1;
+  transition: background 0.2s;
+  margin-left: 8px;
+}
+.btn-fullscreen:hover { background: rgba(255,255,255,0.3); }
+
 .game-body { display: flex; flex: 1; overflow: hidden; }
 
 #streetview { flex: 1; height: 100%; position: relative; }

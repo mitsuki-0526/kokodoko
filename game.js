@@ -305,6 +305,22 @@ window.initGame = function () {
 
   // ゲーム内
   document.getElementById('btn-submit').addEventListener('click', onSubmit);
+
+  // フルスクリーン
+  const btnFs = document.getElementById('btn-fullscreen');
+  btnFs.addEventListener('click', () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  });
+  document.addEventListener('fullscreenchange', () => {
+    btnFs.textContent = document.fullscreenElement ? '✕' : '⛶';
+    btnFs.title       = document.fullscreenElement ? 'フルスクリーン解除' : 'フルスクリーン';
+    if (panorama) setTimeout(() => google.maps.event.trigger(panorama, 'resize'), 100);
+  });
+
   document.getElementById('btn-return-start').addEventListener('click', () => {
     if (startLocation && startPov) {
       panorama.setPosition(startLocation);
