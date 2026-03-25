@@ -186,6 +186,7 @@ function initGSI() {
 
 // Googleログイン実行（ポップアップ）
 function signInWithGoogle() {
+  if (!gsiTokenClient) initGSI(); // GSIスクリプトの読み込みが遅れた場合に再試行
   if (!gsiTokenClient) {
     document.getElementById('login-error').textContent = 'しばらく待ってから再試行してください。';
     return;
