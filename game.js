@@ -229,6 +229,8 @@ let currentPrefKey = '';
 let currentRound = 0;
 let currentLocation = null; // { lat, lng } または LatLng
 let currentLocationLabel = ''; // 世界モード用：正解地名
+let startLocation = null;  // スタート地点（戻るボタン用）
+let startPov = null;       // スタート時のカメラ角度（戻るボタン用）
 let totalScore = 0;
 let roundOrder = [];
 let localPanoramas = []; // 地元モードで収集した座標
@@ -303,6 +305,12 @@ window.initGame = function () {
 
   // ゲーム内
   document.getElementById('btn-submit').addEventListener('click', onSubmit);
+  document.getElementById('btn-return-start').addEventListener('click', () => {
+    if (startLocation && startPov) {
+      panorama.setPosition(startLocation);
+      panorama.setPov(startPov);
+    }
+  });
 
   // 結果画面
   document.getElementById('btn-next').addEventListener('click', nextRound);
@@ -483,8 +491,10 @@ function loadRound() {
 
   if (currentMode === 'local') {
     currentLocation = localPanoramas[currentRound];
+    startPov = { heading: Math.random() * 360, pitch: 0 };
+    startLocation = currentLocation;
     panorama.setPosition(currentLocation);
-    panorama.setPov({ heading: Math.random() * 360, pitch: 0 });
+    panorama.setPov(startPov);
   } else {
     const locs = currentMode === 'world' ? WORLD_LOCATIONS : LOCATIONS;
     tryLoadFixedRound(locs, roundOrder[currentRound], 0);
@@ -501,15 +511,19 @@ function tryLoadFixedRound(locs, idx, tries) {
       if (status === 'OK' && (data.links || []).length >= MIN_LINKS) {
         currentLocation = data.location.latLng;
         currentLocationLabel = currentMode === 'world' ? loc.label : '';
+        startPov = { heading: Math.random() * 360, pitch: 0 };
+        startLocation = currentLocation;
         panorama.setPosition(currentLocation);
-        panorama.setPov({ heading: Math.random() * 360, pitch: 0 });
+        panorama.setPov(startPov);
       } else if (tries < 5) {
         tryLoadFixedRound(locs, idx + 1, tries + 1);
       } else {
         currentLocation = new google.maps.LatLng(loc.lat, loc.lng);
         currentLocationLabel = currentMode === 'world' ? loc.label : '';
+        startPov = { heading: Math.random() * 360, pitch: 0 };
+        startLocation = currentLocation;
         panorama.setPosition(currentLocation);
-        panorama.setPov({ heading: Math.random() * 360, pitch: 0 });
+        panorama.setPov(startPov);
       }
     }
   );

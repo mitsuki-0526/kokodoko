@@ -323,7 +323,28 @@ html, body {
 
 .game-body { display: flex; flex: 1; overflow: hidden; }
 
-#streetview { flex: 1; height: 100%; }
+#streetview { flex: 1; height: 100%; position: relative; }
+
+.btn-return-start {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: background 0.2s;
+  pointer-events: auto;
+}
+.btn-return-start:hover {
+  background: rgba(0, 0, 0, 0.85);
+}
 
 .map-panel {
   width: 360px;
