@@ -233,6 +233,7 @@ let startLocation = null;  // スタート地点（戻るボタン用）
 let startPov = null;       // スタート時のカメラ角度（戻るボタン用）
 let totalScore = 0;
 let roundOrder = [];
+let usedLocationIndices = new Set(); // 使用済み場所インデックス（重複防止）
 let localPanoramas = []; // 地元モードで収集した座標
 
 // ========== 画面切り替え ==========
@@ -376,6 +377,7 @@ function startGame() {
   } else {
     const locs = currentMode === 'world' ? WORLD_LOCATIONS : LOCATIONS;
     roundOrder = shuffled([...Array(locs.length).keys()]).slice(0, TOTAL_ROUNDS);
+    usedLocationIndices = new Set();
     showScreen('screen-game');
     loadRound();
   }
@@ -517,23 +519,34 @@ function loadRound() {
   }
 }
 
-// 固定リストモード（全国・世界）：リンク数が足りない場所は次の候補にスキップ
+// 固定リストモード（全国・世界）：リンク数が足りない・使用済みの場所は次の候補にスキップ
 function tryLoadFixedRound(locs, idx, tries) {
-  const loc = locs[idx % locs.length];
+  const actualIdx = idx % locs.length;
+
+  // 使用済みインデックスはスキップ（試行回数上限以内なら）
+  if (usedLocationIndices.has(actualIdx) && tries < locs.length - 1) {
+    tryLoadFixedRound(locs, idx + 1, tries + 1);
+    return;
+  }
+
+  const loc = locs[actualIdx];
   const radius = currentMode === 'world' ? 500 : 100;
   svService.getPanorama(
     { location: { lat: loc.lat, lng: loc.lng }, radius, source: google.maps.StreetViewSource.OUTDOOR },
     (data, status) => {
       if (status === 'OK' && (data.links || []).length >= MIN_LINKS) {
+        usedLocationIndices.add(actualIdx);
         currentLocation = data.location.latLng;
         currentLocationLabel = currentMode === 'world' ? loc.label : '';
         startPov = { heading: Math.random() * 360, pitch: 0 };
         startLocation = currentLocation;
         panorama.setPosition(currentLocation);
         panorama.setPov(startPov);
-      } else if (tries < 5) {
+      } else if (tries < locs.length - 1) {
         tryLoadFixedRound(locs, idx + 1, tries + 1);
       } else {
+        // どうしても見つからない場合はそのまま使用
+        usedLocationIndices.add(actualIdx);
         currentLocation = new google.maps.LatLng(loc.lat, loc.lng);
         currentLocationLabel = currentMode === 'world' ? loc.label : '';
         startPov = { heading: Math.random() * 360, pitch: 0 };
