@@ -47,98 +47,188 @@ const LOCATIONS = [
   { lat: 35.5023, lng: 134.2353, label: '鳥取砂丘' },
 ];
 
-// ========== 世界チャレンジ 出題座標リスト（80か所） ==========
+// ========== 世界チャレンジ 出題座標リスト（150か所） ==========
 const WORLD_LOCATIONS = [
-  // ── ヨーロッパ ──
+  // ── ヨーロッパ：フランス ──
   { lat: 48.8530,  lng: 2.3499,   label: 'エッフェル塔（フランス）' },
   { lat: 48.8606,  lng: 2.3376,   label: 'ルーブル美術館（フランス）' },
   { lat: 48.8049,  lng: 2.1204,   label: 'ヴェルサイユ宮殿（フランス）' },
+  { lat: 43.7102,  lng: 7.2620,   label: 'ニース海岸（フランス）' },
+  { lat: 43.2965,  lng: 5.3698,   label: 'マルセイユ（フランス）' },
+
+  // ── ヨーロッパ：イタリア ──
   { lat: 41.8902,  lng: 12.4922,  label: 'コロッセオ（イタリア）' },
   { lat: 43.7230,  lng: 10.3966,  label: 'ピサの斜塔（イタリア）' },
-  { lat: 45.4341,  lng: 12.3388,  label: 'ヴェネツィア（イタリア）' },
+  { lat: 45.4341,  lng: 12.3388,  label: 'ヴェネツィア運河（イタリア）' },
   { lat: 41.9029,  lng: 12.4534,  label: 'バチカン市国（イタリア）' },
+  { lat: 43.7696,  lng: 11.2558,  label: 'フィレンツェ（イタリア）' },
+  { lat: 40.8518,  lng: 14.2681,  label: 'ナポリ（イタリア）' },
+  { lat: 37.5079,  lng: 15.0830,  label: 'カターニア（シチリア・イタリア）' },
+
+  // ── ヨーロッパ：スペイン・ポルトガル ──
+  { lat: 41.4036,  lng: 2.1744,   label: 'サグラダ・ファミリア（スペイン）' },
+  { lat: 37.1760,  lng: -3.5881,  label: 'アルハンブラ宮殿（スペイン）' },
+  { lat: 40.4168,  lng: -3.7038,  label: 'マドリード（スペイン）' },
+  { lat: 37.3861,  lng: -5.9925,  label: 'セビリア（スペイン）' },
+  { lat: 39.4699,  lng: -0.3763,  label: 'バレンシア（スペイン）' },
+  { lat: 38.7223,  lng: -9.1393,  label: 'リスボン（ポルトガル）' },
+  { lat: 41.1579,  lng: -8.6291,  label: 'ポルト（ポルトガル）' },
+
+  // ── ヨーロッパ：イギリス・アイルランド ──
   { lat: 51.5007,  lng: -0.1246,  label: 'ビッグベン（イギリス）' },
   { lat: 55.9486,  lng: -3.1999,  label: 'エジンバラ城（イギリス）' },
   { lat: 51.1789,  lng: -1.8262,  label: 'ストーンヘンジ（イギリス）' },
-  { lat: 41.4036,  lng: 2.1744,   label: 'サグラダ・ファミリア（スペイン）' },
-  { lat: 37.1760,  lng: -3.5881,  label: 'アルハンブラ宮殿（スペイン）' },
+  { lat: 53.4808,  lng: -2.2426,  label: 'マンチェスター（イギリス）' },
+  { lat: 53.3498,  lng: -6.2603,  label: 'ダブリン（アイルランド）' },
+
+  // ── ヨーロッパ：中欧 ──
   { lat: 50.0755,  lng: 14.4378,  label: 'プラハ旧市街（チェコ）' },
   { lat: 48.2082,  lng: 16.3738,  label: 'ウィーン（オーストリア）' },
   { lat: 47.5576,  lng: 13.6493,  label: 'ハルシュタット（オーストリア）' },
+  { lat: 47.8107,  lng: 13.0550,  label: 'ザルツブルク（オーストリア）' },
+  { lat: 47.4979,  lng: 19.0402,  label: 'ブダペスト（ハンガリー）' },
+  { lat: 48.1486,  lng: 17.1077,  label: 'ブラチスラバ（スロバキア）' },
+  { lat: 50.0647,  lng: 19.9450,  label: 'クラクフ（ポーランド）' },
+  { lat: 52.2297,  lng: 21.0122,  label: 'ワルシャワ（ポーランド）' },
+
+  // ── ヨーロッパ：ドイツ・スイス・オランダ ──
+  { lat: 52.5200,  lng: 13.4050,  label: 'ベルリン（ドイツ）' },
+  { lat: 48.1351,  lng: 11.5820,  label: 'ミュンヘン（ドイツ）' },
+  { lat: 50.9413,  lng: 6.9583,   label: 'ケルン大聖堂（ドイツ）' },
+  { lat: 47.6553,  lng: 10.7395,  label: 'ノイシュバンシュタイン城（ドイツ）' },
+  { lat: 46.9480,  lng: 7.4474,   label: 'ベルン（スイス）' },
+  { lat: 46.2044,  lng: 6.1432,   label: 'ジュネーブ（スイス）' },
+  { lat: 47.3769,  lng: 8.5417,   label: 'チューリッヒ（スイス）' },
   { lat: 52.3731,  lng: 4.8922,   label: 'アムステルダム（オランダ）' },
   { lat: 50.8503,  lng: 4.3517,   label: 'ブリュッセル（ベルギー）' },
-  { lat: 55.7539,  lng: 37.6208,  label: '赤の広場（ロシア）' },
-  { lat: 59.9343,  lng: 30.3351,  label: 'サンクトペテルブルク（ロシア）' },
-  { lat: 36.3932,  lng: 25.4615,  label: 'サントリーニ島（ギリシャ）' },
-  { lat: 37.9715,  lng: 23.7267,  label: 'パルテノン神殿（ギリシャ）' },
-  { lat: 47.5573,  lng: 7.5925,   label: 'バーゼル（スイス）' },
-  { lat: 46.9480,  lng: 7.4474,   label: 'ベルン（スイス）' },
+  { lat: 51.2093,  lng: 3.2247,   label: 'ブルッヘ（ベルギー）' },
+
+  // ── ヨーロッパ：北欧 ──
   { lat: 55.6761,  lng: 12.5683,  label: 'コペンハーゲン（デンマーク）' },
   { lat: 59.3293,  lng: 18.0686,  label: 'ストックホルム（スウェーデン）' },
-  { lat: 47.8107,  lng: 13.0550,  label: 'ザルツブルク（オーストリア）' },
-  { lat: 47.6553,  lng: 10.7395,  label: 'ノイシュバンシュタイン城（ドイツ）' },
-  { lat: 50.9413,  lng: 6.9583,   label: 'ケルン大聖堂（ドイツ）' },
-  { lat: 42.6507,  lng: 18.0944,  label: 'ドゥブロヴニク旧市街（クロアチア）' },
-  { lat: 47.4979,  lng: 19.0402,  label: 'ブダペスト（ハンガリー）' },
+  { lat: 59.9139,  lng: 10.7522,  label: 'オスロ（ノルウェー）' },
+  { lat: 60.3913,  lng: 5.3221,   label: 'ベルゲン（ノルウェー）' },
+  { lat: 60.1699,  lng: 24.9384,  label: 'ヘルシンキ（フィンランド）' },
+  { lat: 64.1466,  lng: -21.9426, label: 'レイキャビク（アイスランド）' },
+  { lat: 70.6632,  lng: 23.6821,  label: 'トロムソ（ノルウェー）' },
 
-  // ── アメリカ大陸 ──
+  // ── ヨーロッパ：南東欧・ギリシャ ──
+  { lat: 36.3932,  lng: 25.4615,  label: 'サントリーニ島（ギリシャ）' },
+  { lat: 37.9715,  lng: 23.7267,  label: 'パルテノン神殿（ギリシャ）' },
+  { lat: 40.6401,  lng: 22.9444,  label: 'テッサロニキ（ギリシャ）' },
+  { lat: 42.6507,  lng: 18.0944,  label: 'ドゥブロヴニク旧市街（クロアチア）' },
+  { lat: 43.5081,  lng: 16.4402,  label: 'スプリト（クロアチア）' },
+  { lat: 44.8176,  lng: 20.4569,  label: 'ベオグラード（セルビア）' },
+  { lat: 42.6977,  lng: 23.3219,  label: 'ソフィア（ブルガリア）' },
+  { lat: 44.4268,  lng: 26.1025,  label: 'ブカレスト（ルーマニア）' },
+  { lat: 59.4370,  lng: 24.7536,  label: 'タリン（エストニア）' },
+  { lat: 54.6872,  lng: 25.2797,  label: 'ヴィリニュス（リトアニア）' },
+
+  // ── ロシア ──
+  { lat: 55.7539,  lng: 37.6208,  label: '赤の広場（ロシア）' },
+  { lat: 59.9343,  lng: 30.3351,  label: 'サンクトペテルブルク（ロシア）' },
+
+  // ── アメリカ合衆国 ──
   { lat: 40.7580,  lng: -73.9855, label: 'タイムズスクエア（アメリカ）' },
+  { lat: 40.7484,  lng: -73.9967, label: 'エンパイアステートビル（アメリカ）' },
+  { lat: 40.6892,  lng: -74.0445, label: '自由の女神（アメリカ）' },
   { lat: 37.8199,  lng: -122.4783,label: 'ゴールデンゲートブリッジ（アメリカ）' },
+  { lat: 34.0195,  lng: -118.4912,label: 'サンタモニカ（アメリカ）' },
   { lat: 38.8895,  lng: -77.0353, label: 'リンカーン記念堂（アメリカ）' },
   { lat: 29.9511,  lng: -90.0715, label: 'ニューオーリンズ（アメリカ）' },
   { lat: 36.1147,  lng: -115.1728,label: 'ラスベガス（アメリカ）' },
   { lat: 41.8827,  lng: -87.6233, label: 'シカゴ（アメリカ）' },
   { lat: 25.7617,  lng: -80.1918, label: 'マイアミビーチ（アメリカ）' },
+  { lat: 47.6062,  lng: -122.3321,label: 'シアトル（アメリカ）' },
+  { lat: 42.3601,  lng: -71.0589, label: 'ボストン（アメリカ）' },
+  { lat: 29.7604,  lng: -95.3698, label: 'ヒューストン（アメリカ）' },
+  { lat: 30.2672,  lng: -97.7431, label: 'オースティン（アメリカ）' },
+
+  // ── カナダ ──
   { lat: 43.0896,  lng: -79.0849, label: 'ナイアガラの滝（カナダ）' },
   { lat: 45.5017,  lng: -73.5673, label: 'モントリオール（カナダ）' },
+  { lat: 43.6532,  lng: -79.3832, label: 'トロント（カナダ）' },
+  { lat: 49.2827,  lng: -123.1207,label: 'バンクーバー（カナダ）' },
+  { lat: 46.8139,  lng: -71.2080, label: 'ケベックシティ（カナダ）' },
+
+  // ── 中南米 ──
   { lat: -22.9068, lng: -43.1729, label: 'コルコバードの丘（ブラジル）' },
-  { lat: -22.9714, lng: -43.1823, label: 'リオ・デジャネイロ（ブラジル）' },
+  { lat: -23.5505, lng: -46.6333, label: 'サンパウロ（ブラジル）' },
   { lat: -34.6037, lng: -58.3816, label: 'ブエノスアイレス（アルゼンチン）' },
+  { lat: -33.4489, lng: -70.6693, label: 'サンティアゴ（チリ）' },
   { lat: 19.4326,  lng: -99.1332, label: 'メキシコシティ（メキシコ）' },
   { lat: 20.6843,  lng: -88.5678, label: 'チチェン・イッツァ（メキシコ）' },
-  { lat: 10.4806,  lng: -66.9036, label: 'カラカス（ベネズエラ）' },
-  { lat: 4.7110,   lng: -74.0721, label: 'ボゴタ（コロンビア）' },
   { lat: -13.1631, lng: -72.5450, label: 'マチュピチュ（ペルー）' },
+  { lat: -12.0464, lng: -77.0428, label: 'リマ（ペルー）' },
   { lat: 23.1136,  lng: -82.3666, label: 'ハバナ（キューバ）' },
+  { lat: 4.7110,   lng: -74.0721, label: 'ボゴタ（コロンビア）' },
+  { lat: 6.2442,   lng: -75.5812, label: 'メデジン（コロンビア）' },
+  { lat: 8.9824,   lng: -79.5199, label: 'パナマシティ（パナマ）' },
+  { lat: 9.9281,   lng: -84.0907, label: 'サンホセ（コスタリカ）' },
 
-  // ── アジア ──
+  // ── アジア：東アジア ──
   { lat: 40.4319,  lng: 116.5704, label: '万里の長城（中国）' },
-  { lat: 39.9163,  lng: 116.3972, label: '故宮・天安門広場（中国）' },
+  { lat: 39.9163,  lng: 116.3972, label: '天安門広場（中国）' },
   { lat: 31.2304,  lng: 121.4737, label: '上海（中国）' },
   { lat: 22.2855,  lng: 114.1577, label: '香港（中国）' },
-  { lat: 27.1751,  lng: 78.0421,  label: 'タージマハル（インド）' },
-  { lat: 28.6139,  lng: 77.2090,  label: 'ニューデリー（インド）' },
-  { lat: 13.7563,  lng: 100.5018, label: 'バンコク（タイ）' },
+  { lat: 22.1987,  lng: 113.5439, label: 'マカオ（中国）' },
+  { lat: 30.5728,  lng: 104.0668, label: '成都（中国）' },
+  { lat: 34.3416,  lng: 108.9398, label: '西安（中国）' },
+  { lat: 25.0330,  lng: 121.5654, label: '台北（台湾）' },
   { lat: 37.5665,  lng: 126.9780, label: 'ソウル（韓国）' },
-  { lat: 1.2894,   lng: 103.8500, label: 'マーライオン（シンガポール）' },
-  { lat: 25.1972,  lng: 55.2744,  label: 'ブルジュ・ハリファ（UAE）' },
-  { lat: 41.0082,  lng: 28.9784,  label: 'イスタンブール（トルコ）' },
+  { lat: 35.1796,  lng: 129.0756, label: '釜山（韓国）' },
+
+  // ── アジア：東南アジア ──
+  { lat: 13.7563,  lng: 100.5018, label: 'バンコク（タイ）' },
   { lat: 13.4125,  lng: 103.8670, label: 'アンコールワット（カンボジア）' },
   { lat: 21.0285,  lng: 105.8542, label: 'ハノイ（ベトナム）' },
   { lat: 10.8231,  lng: 106.6297, label: 'ホーチミン（ベトナム）' },
+  { lat: 15.8801,  lng: 108.3380, label: 'ホイアン（ベトナム）' },
+  { lat: 1.2894,   lng: 103.8500, label: 'マーライオン（シンガポール）' },
   { lat: 3.1390,   lng: 101.6869, label: 'クアラルンプール（マレーシア）' },
   { lat: -8.4095,  lng: 115.1889, label: 'バリ島（インドネシア）' },
-  { lat: 27.7172,  lng: 85.3240,  label: 'カトマンズ（ネパール）' },
-  { lat: 33.5138,  lng: 36.2765,  label: 'ダマスカス旧市街（シリア）' },
-  { lat: 30.3285,  lng: 35.4444,  label: 'ペトラ（ヨルダン）' },
+  { lat: -6.2088,  lng: 106.8456, label: 'ジャカルタ（インドネシア）' },
+  { lat: 14.5995,  lng: 120.9842, label: 'マニラ（フィリピン）' },
+  { lat: 16.8661,  lng: 96.1951,  label: 'ヤンゴン（ミャンマー）' },
 
-  // ── アフリカ・中東 ──
+  // ── アジア：南アジア・中東 ──
+  { lat: 27.1751,  lng: 78.0421,  label: 'タージマハル（インド）' },
+  { lat: 28.6139,  lng: 77.2090,  label: 'ニューデリー（インド）' },
+  { lat: 18.9220,  lng: 72.8347,  label: 'ムンバイ（インド）' },
+  { lat: 27.7172,  lng: 85.3240,  label: 'カトマンズ（ネパール）' },
+  { lat: 6.9271,   lng: 79.8612,  label: 'コロンボ（スリランカ）' },
+  { lat: 25.1972,  lng: 55.2744,  label: 'ブルジュ・ハリファ（UAE）' },
+  { lat: 26.2235,  lng: 50.5876,  label: 'マナーマ（バーレーン）' },
+  { lat: 41.0082,  lng: 28.9784,  label: 'イスタンブール（トルコ）' },
+  { lat: 39.9208,  lng: 32.8541,  label: 'アンカラ（トルコ）' },
+  { lat: 30.3285,  lng: 35.4444,  label: 'ペトラ（ヨルダン）' },
+  { lat: 31.7683,  lng: 35.2137,  label: 'エルサレム（イスラエル）' },
+  { lat: 32.0853,  lng: 34.7818,  label: 'テルアビブ（イスラエル）' },
+  { lat: 41.6938,  lng: 44.8015,  label: 'トビリシ（ジョージア）' },
+  { lat: 40.4093,  lng: 49.8671,  label: 'バクー（アゼルバイジャン）' },
+
+  // ── アフリカ ──
   { lat: 30.0444,  lng: 31.2357,  label: 'カイロ（エジプト）' },
   { lat: 29.9792,  lng: 31.1342,  label: 'ギザのピラミッド（エジプト）' },
   { lat: 31.6295,  lng: -7.9811,  label: 'マラケシュ（モロッコ）' },
+  { lat: 33.5731,  lng: -7.5898,  label: 'カサブランカ（モロッコ）' },
+  { lat: 36.8065,  lng: 10.1815,  label: 'チュニス（チュニジア）' },
   { lat: -33.9249, lng: 18.4241,  label: 'ケープタウン（南アフリカ）' },
+  { lat: -26.2041, lng: 28.0473,  label: 'ヨハネスブルク（南アフリカ）' },
   { lat: -1.2921,  lng: 36.8219,  label: 'ナイロビ（ケニア）' },
+  { lat: -6.7924,  lng: 39.2083,  label: 'ダルエスサラーム（タンザニア）' },
   { lat: -17.9243, lng: 25.8572,  label: 'ヴィクトリアの滝（ザンビア）' },
+  { lat: 5.5600,   lng: -0.2057,  label: 'アクラ（ガーナ）' },
+  { lat: 14.6937,  lng: -17.4441, label: 'ダカール（セネガル）' },
 
   // ── オセアニア ──
   { lat: -33.8568, lng: 151.2153, label: 'シドニー・オペラハウス（オーストラリア）' },
   { lat: -37.8136, lng: 144.9631, label: 'メルボルン（オーストラリア）' },
+  { lat: -27.4698, lng: 153.0251, label: 'ブリスベン（オーストラリア）' },
+  { lat: -31.9505, lng: 115.8605, label: 'パース（オーストラリア）' },
   { lat: -36.8485, lng: 174.7633, label: 'オークランド（ニュージーランド）' },
   { lat: -45.0312, lng: 168.6626, label: 'クイーンズタウン（ニュージーランド）' },
-
-  // ── 北極・その他 ──
-  { lat: 64.1466,  lng: -21.9426, label: 'レイキャビク（アイスランド）' },
-  { lat: 70.6632,  lng: 23.6821,  label: 'トロムソ（ノルウェー）' },
+  { lat: -43.5321, lng: 172.6362, label: 'クライストチャーチ（ニュージーランド）' },
 ];
 
 // ========== カスタムエリア（学校・地域指定） ==========
@@ -577,45 +667,38 @@ function loadRound() {
     panorama.setPov(startPov);
   } else {
     const locs = currentMode === 'world' ? WORLD_LOCATIONS : LOCATIONS;
-    tryLoadFixedRound(locs, roundOrder[currentRound], 0);
+    tryLoadFixedRound(locs, 0);
   }
 }
 
-// 固定リストモード（全国・世界）：リンク数が足りない・使用済みの場所は次の候補にスキップ
-function tryLoadFixedRound(locs, idx, tries) {
-  const actualIdx = idx % locs.length;
-
-  // 使用済みインデックスはスキップ（試行回数上限以内なら）
-  if (usedLocationIndices.has(actualIdx) && tries < locs.length - 1) {
-    tryLoadFixedRound(locs, idx + 1, tries + 1);
-    return;
+// 固定リストモード：未使用からランダム選択してStreetViewを検証
+function tryLoadFixedRound(locs, tries) {
+  if (tries >= 25) {
+    // 25回試してもダメなら使用済みリセットして最初の未使用を使う
+    usedLocationIndices.clear();
   }
 
-  const loc = locs[actualIdx];
+  // 未使用インデックスをランダムに選ぶ
+  const available = [...Array(locs.length).keys()].filter(i => !usedLocationIndices.has(i));
+  const pool = available.length > 0 ? available : [...Array(locs.length).keys()];
+  const idx = pool[Math.floor(Math.random() * pool.length)];
+
+  const loc = locs[idx];
   const radius = currentMode === 'world' ? 500 : 100;
   svService.getPanorama(
     { location: { lat: loc.lat, lng: loc.lng }, radius, source: google.maps.StreetViewSource.OUTDOOR },
     (data, status) => {
       if (status === 'OK' && (data.links || []).length >= MIN_LINKS) {
-        usedLocationIndices.add(actualIdx);
+        usedLocationIndices.add(idx);
         currentLocation = data.location.latLng;
         currentLocationLabel = currentMode === 'world' ? loc.label : '';
         startPov = { heading: Math.random() * 360, pitch: 0 };
         startLocation = currentLocation;
-        // setPanoで取得したパノラマIDを直接指定（setPositionの屋内スナップを防止）
         panorama.setPano(data.location.pano);
         panorama.setPov(startPov);
-      } else if (tries < locs.length - 1) {
-        tryLoadFixedRound(locs, idx + 1, tries + 1);
       } else {
-        // どうしても見つからない場合はsetPositionで代替
-        usedLocationIndices.add(actualIdx);
-        currentLocation = new google.maps.LatLng(loc.lat, loc.lng);
-        currentLocationLabel = currentMode === 'world' ? loc.label : '';
-        startPov = { heading: Math.random() * 360, pitch: 0 };
-        startLocation = currentLocation;
-        panorama.setPosition(currentLocation);
-        panorama.setPov(startPov);
+        // StreetView取得失敗 → 別の場所をランダムに再試行
+        tryLoadFixedRound(locs, tries + 1);
       }
     }
   );
