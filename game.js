@@ -391,12 +391,13 @@ function collectLocalPanoramas(count) {
     return;
   }
   const region = CUSTOM_REGIONS[currentPrefKey] || PREFECTURES[currentPrefKey];
-  findPanoramaInRegion(region, 0, (latLng) => {
-    if (latLng) localPanoramas.push(latLng);
-    else {
-      // 見つからなければ全国モードの座標で代替
+  findPanoramaInRegion(region, 0, (latLng, pano) => {
+    if (latLng && pano) {
+      localPanoramas.push({ latLng, pano });
+    } else {
+      // 見つからなければ全国モードの座標で代替（panoなし）
       const loc = LOCATIONS[Math.floor(Math.random() * LOCATIONS.length)];
-      localPanoramas.push(new google.maps.LatLng(loc.lat, loc.lng));
+      localPanoramas.push({ latLng: new google.maps.LatLng(loc.lat, loc.lng), pano: null });
     }
     collectLocalPanoramas(count + 1);
   });
@@ -404,7 +405,7 @@ function collectLocalPanoramas(count) {
 
 // ========== 地域内ランダムパノラマ探索 ==========
 // links が2本以上ある屋外パノラマのみ採用（行き止まり・屋内・店内を除外）
-const MIN_LINKS = 2;
+const MIN_LINKS = 4; // 4方向以上あれば屋外の交差点・道路と判断できる
 
 function findPanoramaInRegion(region, attempts, callback) {
   if (attempts >= 30) { callback(null); return; }
@@ -417,9 +418,9 @@ function findPanoramaInRegion(region, attempts, callback) {
       if (status === 'OK') {
         const links = data.links || [];
         if (links.length >= MIN_LINKS) {
-          callback(data.location.latLng);
+          // latLngとpanoIdの両方を返す（setPanoで正確に指定するため）
+          callback(data.location.latLng, data.location.pano);
         } else {
-          // 移動できる方向が少なすぎる（行き止まり・屋内）→ 再試行
           findPanoramaInRegion(region, attempts + 1, callback);
         }
       } else {
@@ -508,10 +509,16 @@ function loadRound() {
   resetAnswerMapView();
 
   if (currentMode === 'local') {
-    currentLocation = localPanoramas[currentRound];
+    const entry = localPanoramas[currentRound];
+    currentLocation = entry.latLng;
     startPov = { heading: Math.random() * 360, pitch: 0 };
     startLocation = currentLocation;
-    panorama.setPosition(currentLocation);
+    // panoIdがある場合はsetPanoで正確に指定（屋内スナップを防止）
+    if (entry.pano) {
+      panorama.setPano(entry.pano);
+    } else {
+      panorama.setPosition(currentLocation);
+    }
     panorama.setPov(startPov);
   } else {
     const locs = currentMode === 'world' ? WORLD_LOCATIONS : LOCATIONS;
@@ -540,12 +547,13 @@ function tryLoadFixedRound(locs, idx, tries) {
         currentLocationLabel = currentMode === 'world' ? loc.label : '';
         startPov = { heading: Math.random() * 360, pitch: 0 };
         startLocation = currentLocation;
-        panorama.setPosition(currentLocation);
+        // setPanoで取得したパノラマIDを直接指定（setPositionの屋内スナップを防止）
+        panorama.setPano(data.location.pano);
         panorama.setPov(startPov);
       } else if (tries < locs.length - 1) {
         tryLoadFixedRound(locs, idx + 1, tries + 1);
       } else {
-        // どうしても見つからない場合はそのまま使用
+        // どうしても見つからない場合はsetPositionで代替
         usedLocationIndices.add(actualIdx);
         currentLocation = new google.maps.LatLng(loc.lat, loc.lng);
         currentLocationLabel = currentMode === 'world' ? loc.label : '';
