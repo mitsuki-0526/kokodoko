@@ -684,15 +684,20 @@ function submitScore() {
     + '&score=' + encodeURIComponent(totalScore)
     + '&mode='  + encodeURIComponent(modeStr);
 
-  window.open(url, '_blank');
+  const newWin = window.open(url, '_blank');
 
   btn.disabled    = true;
   btn.textContent = '登録済み ✅';
   status.classList.remove('hidden');
   status.textContent = '✅ 登録しました！別タブが自動で閉じます';
 
+  // 親ウィンドウ側から閉じる（GAS側のwindow.closeはリダイレクト後にブロックされるため）
+  setTimeout(() => {
+    if (newWin && !newWin.closed) newWin.close();
+  }, 2000);
+
   const tab = currentMode === 'local' ? 'local' : currentMode === 'world' ? 'world' : 'nationwide';
-  setTimeout(() => showRanking(tab), 1500);
+  setTimeout(() => showRanking(tab), 2200);
 }
 
 // ========== ランキング画面表示 ==========
