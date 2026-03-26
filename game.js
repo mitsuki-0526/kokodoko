@@ -594,8 +594,12 @@ function initMaps() {
     }
   );
 
-  // タイルが読み込まれたらオーバーレイを非表示
+  // タイルが読み込まれたらオーバーレイを非表示（pano_changedとtiles_loadedの両方を監視）
   panorama.addListener('tiles_loaded', () => showSvLoading(false));
+  panorama.addListener('pano_changed',  () => {
+    // pano_changedは位置確定時点で発火。タイル完了を少し待ってから非表示
+    setTimeout(() => showSvLoading(false), 600);
+  });
 
   // 地元モードは大阪港駅中心・ズーム14、全国モードは日本全体
   const mapCenter = currentMode === 'local'

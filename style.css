@@ -337,7 +337,10 @@ html, body {
 
 .game-body { display: flex; flex: 1; overflow: hidden; }
 
-#streetview { flex: 1; height: 100%; position: relative; }
+/* StreetViewのラッパー（ボタン・オーバーレイの基準） */
+.sv-wrap { flex: 1; position: relative; overflow: hidden; min-height: 0; }
+
+#streetview { width: 100%; height: 100%; }
 
 .btn-return-start {
   position: absolute;
@@ -371,7 +374,7 @@ html, body {
   align-items: center;
   justify-content: center;
   gap: 16px;
-  transition: opacity 0.3s;
+  transition: opacity 0.4s;
 }
 .sv-loading.hidden {
   opacity: 0;
@@ -401,6 +404,68 @@ html, body {
   flex-direction: column;
   background: #16213e;
   border-left: 3px solid #ff6b9d;
+}
+
+/* ========== スマートフォン対応 ========== */
+@media (max-width: 767px) {
+  /* ゲーム画面を縦並びに */
+  .game-body {
+    flex-direction: column;
+  }
+
+  /* StreetViewは上60% */
+  .sv-wrap {
+    flex: none;
+    height: 58svh;
+    width: 100%;
+  }
+
+  /* マップパネルは下側・全幅 */
+  .map-panel {
+    width: 100%;
+    flex: 1;
+    border-left: none;
+    border-top: 3px solid #ff6b9d;
+    min-height: 0;
+  }
+
+  /* ヒントとボタンをコンパクトに */
+  .map-hint {
+    font-size: 0.75rem;
+    padding: 5px 8px;
+  }
+
+  .btn-submit {
+    margin: 6px 8px;
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+
+  /* ゲームヘッダー */
+  .game-header {
+    padding: 6px 10px;
+    gap: 6px;
+  }
+
+  .round-info { font-size: 0.75rem; }
+  .score-display { font-size: 0.75rem; }
+  .mode-badge { font-size: 0.7rem; padding: 2px 8px; }
+
+  .btn-return-start {
+    font-size: 0.75rem;
+    padding: 6px 10px;
+  }
+
+  /* 各画面のフォントをスマホ向けに調整 */
+  .btn { font-size: 1rem; padding: 12px 28px; }
+
+  .result-distance { font-size: 1.5rem; }
+  .result-score-msg { font-size: 1rem; }
+  .result-content { padding: 12px 16px; gap: 8px; }
+  .result-medal { font-size: 2.5rem; }
+  #result-map { height: 180px !important; }
+
+  .final-score { font-size: 2.8rem; }
 }
 
 .map-hint {
