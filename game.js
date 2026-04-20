@@ -1,8 +1,5 @@
 'use strict';
 
-// ========== Google Identity Services 設定 ==========
-const GSI_CLIENT_ID = '954206939501-gqjp1k3fn9jpaovnuhlshje5olcpn5mv.apps.googleusercontent.com';
-
 // ========== 教育用GAS URL ==========
 const EDU_GAS_URL = 'https://script.google.com/a/macros/oskedu.jp/s/AKfycbxbTQ6tVrySnF4sGy5ZNTcA0c7kAlXJixQPfKX-tpSpYTokTH0ODyG7VvSJo2uO1bLI6g/exec';
 
@@ -13,38 +10,513 @@ const MAX_DISTANCE_KM = 2000;        // 全国モード：2000km 基準
 const MAX_DISTANCE_LOCAL_KM = 3;     // 地元モード：3km 基準（築港エリア想定）
 const MAX_DISTANCE_WORLD_KM = 20000; // 世界チャレンジ：地球半周（約20000km）基準
 
-// ========== 全国モード 出題座標リスト（30か所） ==========
+// ========== 全国モード 出題座標リスト（全47都道府県 約500か所） ==========
 const LOCATIONS = [
+  // ── 北海道 ──
+  { lat: 43.0618, lng: 141.3545, label: '札幌 大通公園' },
+  { lat: 43.0636, lng: 141.3468, label: '札幌 すすきの' },
+  { lat: 43.1907, lng: 140.9947, label: '小樽 運河' },
+  { lat: 43.1864, lng: 140.9926, label: '小樽 堺町通り' },
+  { lat: 41.7686, lng: 140.7152, label: '函館 赤レンガ倉庫' },
+  { lat: 41.7730, lng: 140.7180, label: '函館 元町教会群' },
+  { lat: 43.7703, lng: 142.3652, label: '旭川 平和通' },
+  { lat: 43.5636, lng: 144.3780, label: '釧路 幣舞橋周辺' },
+  { lat: 44.0199, lng: 144.2697, label: '網走 博物館網走監獄周辺' },
+  { lat: 43.3506, lng: 142.4788, label: '富良野 ラベンダー畑周辺' },
+  { lat: 42.4724, lng: 141.1047, label: '登別温泉 地獄谷周辺' },
+  { lat: 42.6018, lng: 140.7866, label: '洞爺湖 湖畔' },
+  { lat: 42.9236, lng: 143.1966, label: '帯広 北の屋台周辺' },
+  { lat: 43.5839, lng: 142.4660, label: '美瑛 丘の風景' },
+  { lat: 44.0709, lng: 144.9786, label: '知床 ウトロ漁港周辺' },
+
+  // ── 青森 ──
+  { lat: 40.6066, lng: 140.4636, label: '弘前城周辺' },
+  { lat: 40.8244, lng: 140.7400, label: '青森 ねぶたの家周辺' },
+  { lat: 41.4875, lng: 141.0433, label: '下北半島 恐山参道' },
+  { lat: 40.6127, lng: 141.2096, label: '十和田 官庁街通り' },
+  { lat: 40.5473, lng: 140.8927, label: '奥入瀬渓流沿い' },
+  { lat: 40.5143, lng: 141.4888, label: '八戸 中心街' },
+  { lat: 41.2951, lng: 141.3198, label: 'むつ市街周辺' },
+  { lat: 40.6234, lng: 140.3695, label: '弘前 洋館通り' },
+
+  // ── 岩手 ──
+  { lat: 38.9877, lng: 141.1132, label: '平泉 中尊寺周辺' },
+  { lat: 39.7016, lng: 141.1527, label: '盛岡 城跡公園' },
+  { lat: 39.3782, lng: 141.9826, label: '浄土ヶ浜周辺' },
+  { lat: 39.3275, lng: 141.5342, label: '遠野 カッパ淵周辺' },
+  { lat: 39.3765, lng: 141.1222, label: '花巻温泉周辺' },
+  { lat: 38.9042, lng: 141.0928, label: '一ノ関 厳美渓周辺' },
+  { lat: 39.6991, lng: 141.1500, label: '盛岡 南部鉄器店通り' },
+  { lat: 39.2724, lng: 141.8609, label: '宮古 魚市場周辺' },
+
+  // ── 宮城 ──
+  { lat: 38.2682, lng: 140.8694, label: '仙台 青葉城跡' },
+  { lat: 38.3686, lng: 141.0679, label: '松島' },
+  { lat: 38.4267, lng: 141.3035, label: '石巻 日和山公園周辺' },
+  { lat: 38.2671, lng: 140.8719, label: '仙台 定禅寺通り' },
+  { lat: 38.3140, lng: 141.0222, label: '塩竈神社周辺' },
+  { lat: 38.9027, lng: 141.5694, label: '気仙沼 魚市場周辺' },
+  { lat: 38.1083, lng: 140.8710, label: '仙台 秋保温泉周辺' },
+  { lat: 38.2536, lng: 140.8667, label: '仙台 勾当台公園周辺' },
+
+  // ── 秋田 ──
+  { lat: 39.6033, lng: 140.5598, label: '角館 武家屋敷通り' },
+  { lat: 39.7186, lng: 140.1023, label: '秋田駅周辺' },
+  { lat: 39.7009, lng: 140.7302, label: '田沢湖 湖畔' },
+  { lat: 40.0174, lng: 139.8476, label: '男鹿半島 入道崎' },
+  { lat: 39.4359, lng: 140.4986, label: '大曲 花火会場周辺' },
+  { lat: 39.3102, lng: 140.5654, label: '横手 かまくら館周辺' },
+  { lat: 39.1568, lng: 140.5196, label: '湯沢 稲庭うどん店街' },
+  { lat: 40.2079, lng: 140.0291, label: '能代 市街周辺' },
+
+  // ── 山形 ──
+  { lat: 38.2611, lng: 140.3472, label: '山形城跡 霞城公園' },
+  { lat: 38.5844, lng: 140.5672, label: '銀山温泉' },
+  { lat: 38.3114, lng: 140.8836, label: '山寺 立石寺参道' },
+  { lat: 38.7295, lng: 139.8256, label: '鶴岡 致道博物館周辺' },
+  { lat: 38.9205, lng: 139.8387, label: '酒田 山居倉庫周辺' },
+  { lat: 37.9208, lng: 140.1183, label: '米沢城跡周辺' },
+  { lat: 38.4456, lng: 140.3633, label: '天童 将棋資料館周辺' },
+  { lat: 38.6481, lng: 139.9718, label: '羽黒山 参道五重塔周辺' },
+
+  // ── 福島 ──
+  { lat: 37.4896, lng: 139.9266, label: '鶴ヶ城周辺' },
+  { lat: 37.3567, lng: 140.3870, label: '福島市 花見山公園付近' },
+  { lat: 37.6154, lng: 140.1059, label: '猪苗代湖 湖畔' },
+  { lat: 37.2698, lng: 139.9137, label: '大内宿 宿場町' },
+  { lat: 37.6697, lng: 140.0683, label: '裏磐梯 五色沼周辺' },
+  { lat: 37.0424, lng: 140.8881, label: 'いわき 小名浜漁港周辺' },
+  { lat: 37.4026, lng: 140.3628, label: '郡山 開成山公園周辺' },
+  { lat: 37.1256, lng: 140.2092, label: '白河 小峰城跡周辺' },
+
+  // ── 茨城 ──
+  { lat: 36.3771, lng: 140.4654, label: '偕楽園周辺' },
+  { lat: 36.2255, lng: 140.1063, label: '筑波山麓' },
+  { lat: 36.3788, lng: 140.4717, label: '水戸駅周辺' },
+  { lat: 36.5668, lng: 140.3998, label: '袋田の滝周辺' },
+  { lat: 36.3699, lng: 140.3023, label: '笠間稲荷神社周辺' },
+  { lat: 35.9678, lng: 140.6332, label: '鹿島神宮周辺' },
+  { lat: 36.4062, lng: 140.4445, label: '水戸 弘道館周辺' },
+  { lat: 35.6625, lng: 140.0456, label: '牛久大仏周辺' },
+
+  // ── 栃木 ──
+  { lat: 36.7581, lng: 139.5990, label: '日光 東照宮参道' },
+  { lat: 36.5657, lng: 139.8836, label: '宇都宮 大谷資料館周辺' },
+  { lat: 36.6579, lng: 139.9786, label: '足利 足利学校周辺' },
+  { lat: 36.8011, lng: 139.7045, label: '鬼怒川温泉 駅周辺' },
+  { lat: 36.9249, lng: 139.8796, label: '日光 いろは坂展望台' },
+  { lat: 36.4656, lng: 140.0951, label: '益子 陶芸メッセ周辺' },
+  { lat: 36.3771, lng: 139.7278, label: '佐野 厄除大師周辺' },
+  { lat: 36.5600, lng: 139.8873, label: '宇都宮 餃子通り' },
+
+  // ── 群馬 ──
+  { lat: 36.6196, lng: 138.5964, label: '草津温泉 湯畑' },
+  { lat: 36.4742, lng: 138.8942, label: '伊香保温泉 石段街' },
+  { lat: 36.2549, lng: 138.8791, label: '富岡製糸場周辺' },
+  { lat: 36.8480, lng: 138.9841, label: '水上温泉 周辺' },
+  { lat: 36.5535, lng: 139.1905, label: '赤城山 大沼周辺' },
+  { lat: 36.3327, lng: 138.8148, label: '下仁田 ネギ街道周辺' },
+  { lat: 36.3913, lng: 139.0731, label: '高崎 達磨寺周辺' },
+  { lat: 36.3889, lng: 139.0607, label: '前橋 敷島公園周辺' },
+
+  // ── 埼玉 ──
+  { lat: 35.9249, lng: 139.4849, label: '川越 蔵造りの街並み' },
+  { lat: 35.8617, lng: 139.6456, label: 'さいたま新都心' },
+  { lat: 35.9916, lng: 139.0853, label: '秩父 秩父神社周辺' },
+  { lat: 36.1205, lng: 139.1043, label: '長瀞 岩畳周辺' },
+  { lat: 35.7992, lng: 139.4668, label: '所沢 航空記念公園周辺' },
+  { lat: 36.1604, lng: 139.3795, label: '深谷 渋沢栄一生誕地周辺' },
+  { lat: 35.9888, lng: 139.5252, label: '川越 菓子屋横丁' },
+  { lat: 35.8572, lng: 139.6490, label: 'さいたま 氷川神社周辺' },
+
+  // ── 千葉 ──
+  { lat: 35.7938, lng: 140.3170, label: '成田山 表参道' },
+  { lat: 35.6528, lng: 140.0330, label: '幕張 海浜公園周辺' },
+  { lat: 35.7395, lng: 140.8676, label: '銚子 犬吠埼灯台周辺' },
+  { lat: 35.5680, lng: 140.4519, label: '九十九里浜 海岸' },
+  { lat: 35.1499, lng: 139.8127, label: '鋸山 日本寺周辺' },
+  { lat: 35.7235, lng: 140.4993, label: '佐原 香取神宮周辺' },
+  { lat: 35.4826, lng: 140.0143, label: '木更津 金田海岸周辺' },
+  { lat: 35.0444, lng: 139.8234, label: '館山 城山公園周辺' },
+
+  // ── 東京 ──
   { lat: 35.6595, lng: 139.7004, label: '渋谷スクランブル交差点' },
   { lat: 35.7101, lng: 139.8107, label: '東京スカイツリー周辺' },
-  { lat: 35.6586, lng: 139.7454, label: '東京タワー周辺' },
   { lat: 35.6938, lng: 139.7034, label: '新宿西口' },
   { lat: 35.7148, lng: 139.7967, label: '浅草寺周辺' },
+  { lat: 35.7141, lng: 139.7774, label: '上野公園周辺' },
+  { lat: 35.6309, lng: 139.8804, label: 'お台場 潮風公園周辺' },
+  { lat: 35.7022, lng: 139.7741, label: '秋葉原 電気街' },
+  { lat: 35.6628, lng: 139.7302, label: '六本木 ヒルズ周辺' },
+  { lat: 35.6653, lng: 139.7122, label: '表参道' },
+  { lat: 35.6812, lng: 139.7671, label: '東京駅 丸の内' },
+  { lat: 35.7295, lng: 139.7109, label: '池袋 サンシャイン通り' },
+  { lat: 35.6717, lng: 139.7651, label: '銀座 4丁目交差点' },
+  { lat: 35.6613, lng: 139.6681, label: '下北沢 駅周辺' },
+  { lat: 35.7026, lng: 139.5797, label: '吉祥寺 ハーモニカ横丁周辺' },
+  { lat: 35.6586, lng: 139.7454, label: '東京タワー周辺' },
+
+  // ── 神奈川 ──
+  { lat: 35.3167, lng: 139.5352, label: '鎌倉 大仏周辺' },
+  { lat: 35.4437, lng: 139.6476, label: '横浜 中華街' },
+  { lat: 35.4628, lng: 139.6224, label: '横浜 みなとみらい' },
+  { lat: 35.2514, lng: 139.1053, label: '小田原城周辺' },
+  { lat: 35.2001, lng: 139.0254, label: '箱根 芦ノ湖周辺' },
+  { lat: 35.2985, lng: 139.4827, label: '江の島 参道' },
+  { lat: 35.5224, lng: 139.3894, label: '川崎大師 表参道' },
+  { lat: 35.3369, lng: 139.4906, label: '藤沢 湘南海岸' },
+  { lat: 35.2800, lng: 139.6686, label: '横須賀 三笠公園周辺' },
+  { lat: 35.4577, lng: 139.6313, label: '横浜 山下公園周辺' },
+
+  // ── 新潟 ──
+  { lat: 37.9161, lng: 139.0612, label: '新潟駅周辺' },
+  { lat: 37.9508, lng: 139.0254, label: '新潟 古町周辺' },
+  { lat: 37.8268, lng: 138.8588, label: '弥彦神社周辺' },
+  { lat: 37.4959, lng: 138.8578, label: '佐渡 宿根木' },
+  { lat: 37.4451, lng: 138.8509, label: '長岡 花火会場周辺' },
+  { lat: 37.1481, lng: 138.2361, label: '上越 春日山城跡' },
+  { lat: 36.9833, lng: 138.6875, label: '清津峡 周辺' },
+  { lat: 38.0637, lng: 139.4270, label: '村上 武家町通り' },
+
+  // ── 富山 ──
+  { lat: 36.6951, lng: 137.2117, label: '富山城周辺' },
+  { lat: 36.7197, lng: 137.3631, label: '黒部宇奈月温泉駅周辺' },
+  { lat: 36.5548, lng: 136.9856, label: '高岡 瑞龍寺周辺' },
+  { lat: 36.5836, lng: 137.6044, label: '立山 室堂周辺' },
+  { lat: 36.8555, lng: 136.9834, label: '氷見 漁港周辺' },
+  { lat: 36.6451, lng: 136.9651, label: '砺波 散居村展望台' },
+  { lat: 36.6988, lng: 137.1953, label: '富山 環水公園周辺' },
+  { lat: 36.5617, lng: 137.1347, label: '南砺 福光 井波彫刻通り' },
+
+  // ── 石川 ──
+  { lat: 36.5613, lng: 136.6622, label: '金沢 兼六園周辺' },
+  { lat: 36.5619, lng: 136.6562, label: '金沢 ひがし茶屋街' },
+  { lat: 37.0645, lng: 136.9089, label: '能登 輪島朝市周辺' },
+  { lat: 37.1002, lng: 136.9857, label: '和倉温泉 湯っ足りパーク周辺' },
+  { lat: 36.5576, lng: 136.6601, label: '金沢 近江町市場' },
+  { lat: 36.2376, lng: 136.3814, label: '加賀 山中温泉周辺' },
+  { lat: 37.3930, lng: 137.0011, label: '能登 白米千枚田周辺' },
+  { lat: 36.9226, lng: 136.8892, label: '七尾 能登食祭市場周辺' },
+
+  // ── 福井 ──
+  { lat: 36.0924, lng: 136.5369, label: '永平寺参道' },
+  { lat: 36.2293, lng: 136.1434, label: '東尋坊' },
+  { lat: 35.9103, lng: 136.1964, label: '三方五湖 梅丈岳周辺' },
+  { lat: 35.9776, lng: 136.4960, label: '越前大野城周辺' },
+  { lat: 36.0574, lng: 136.5011, label: '勝山 恐竜博物館周辺' },
+  { lat: 35.6476, lng: 136.0556, label: '敦賀 気比神宮周辺' },
+  { lat: 35.4972, lng: 135.7450, label: '小浜 小浜西組の町並み' },
+  { lat: 36.0605, lng: 136.2194, label: '越前 和紙の里周辺' },
+
+  // ── 山梨 ──
+  { lat: 35.5111, lng: 138.7520, label: '河口湖 湖畔' },
+  { lat: 35.6635, lng: 138.5686, label: '甲府 武田神社周辺' },
+  { lat: 35.4667, lng: 138.8013, label: '山中湖 湖畔' },
+  { lat: 35.4898, lng: 138.8074, label: '富士吉田 富士山駅周辺' },
+  { lat: 35.7007, lng: 138.5631, label: '昇仙峡 渓谷遊歩道' },
+  { lat: 35.8983, lng: 138.4250, label: '清里高原 周辺' },
+  { lat: 35.6220, lng: 138.6275, label: '甲府 甲州街道周辺' },
+  { lat: 35.5843, lng: 138.5763, label: '勝沼 ぶどう畑周辺' },
+
+  // ── 長野 ──
+  { lat: 36.2381, lng: 137.9719, label: '松本城周辺' },
+  { lat: 36.6485, lng: 138.1952, label: '長野 善光寺周辺' },
+  { lat: 36.7048, lng: 137.8534, label: '上高地 河童橋周辺' },
+  { lat: 36.3487, lng: 138.5963, label: '軽井沢 旧軽井沢銀座' },
+  { lat: 36.3385, lng: 138.1497, label: '別所温泉 北向観音周辺' },
+  { lat: 36.0519, lng: 138.0781, label: '諏訪湖 湖畔' },
+  { lat: 35.5151, lng: 137.8218, label: '飯田 りんご並木' },
+  { lat: 36.9243, lng: 138.4395, label: '野沢温泉 湯畑' },
+  { lat: 36.0990, lng: 137.8630, label: '奈良井宿 宿場町' },
+  { lat: 36.6987, lng: 137.8587, label: '白馬 スキーリゾート周辺' },
+
+  // ── 岐阜 ──
+  { lat: 36.2570, lng: 136.9065, label: '白川郷 合掌集落' },
+  { lat: 35.4406, lng: 136.7693, label: '岐阜城周辺' },
+  { lat: 36.1399, lng: 137.2521, label: '高山 古い町並み' },
+  { lat: 35.8072, lng: 137.2455, label: '下呂温泉 湯之島館周辺' },
+  { lat: 35.7539, lng: 136.9665, label: '郡上八幡 城下町' },
+  { lat: 35.3697, lng: 136.6194, label: '大垣城周辺' },
+  { lat: 35.4826, lng: 136.7249, label: '岐阜 柳ヶ瀬商店街' },
+  { lat: 35.3559, lng: 137.0527, label: '恵那峡 周辺' },
+
+  // ── 静岡 ──
+  { lat: 35.0969, lng: 139.0722, label: '熱海 駅前周辺' },
+  { lat: 34.9776, lng: 138.3831, label: '静岡 駿府城公園' },
+  { lat: 34.6872, lng: 137.7327, label: '浜松城周辺' },
+  { lat: 34.9694, lng: 138.9267, label: '修善寺温泉 竹林の小径' },
+  { lat: 35.1155, lng: 138.9182, label: '三嶋大社周辺' },
+  { lat: 34.7692, lng: 138.0143, label: '掛川城周辺' },
+  { lat: 34.6798, lng: 138.9426, label: '下田 ペリーロード' },
+  { lat: 35.0919, lng: 138.8617, label: '沼津 港周辺' },
+  { lat: 35.2212, lng: 138.6178, label: '富士宮 富士山本宮浅間大社' },
+  { lat: 34.9654, lng: 139.1009, label: '伊東温泉 松川遊歩道' },
+
+  // ── 愛知 ──
+  { lat: 35.1855, lng: 136.8994, label: '名古屋城周辺' },
+  { lat: 35.1709, lng: 136.8815, label: '名古屋 栄' },
+  { lat: 35.3836, lng: 136.9289, label: '犬山城周辺' },
+  { lat: 35.1270, lng: 136.9085, label: '熱田神宮周辺' },
+  { lat: 34.9565, lng: 137.1627, label: '岡崎城周辺' },
+  { lat: 34.8235, lng: 137.2177, label: '蒲郡 竹島周辺' },
+  { lat: 34.7700, lng: 137.3916, label: '豊橋 市電沿線' },
+  { lat: 35.3064, lng: 136.8003, label: '一宮 真清田神社周辺' },
+  { lat: 34.8878, lng: 136.8393, label: '常滑 やきもの散歩道' },
+  { lat: 35.1818, lng: 136.9077, label: '名古屋 大須観音周辺' },
+
+  // ── 三重 ──
+  { lat: 34.4553, lng: 136.7258, label: '伊勢神宮 内宮参道' },
+  { lat: 34.4967, lng: 136.8447, label: '鳥羽 水族館周辺' },
+  { lat: 33.9984, lng: 136.1706, label: '熊野古道 馬越峠周辺' },
+  { lat: 34.5777, lng: 136.5270, label: '松阪 御城番屋敷周辺' },
+  { lat: 34.7666, lng: 136.1317, label: '伊賀上野城周辺' },
+  { lat: 34.4973, lng: 136.7873, label: '二見 夫婦岩周辺' },
+  { lat: 34.3292, lng: 136.8333, label: '志摩 英虞湾周辺' },
+  { lat: 33.7228, lng: 136.0138, label: '熊野市 鬼ケ城周辺' },
+
+  // ── 滋賀 ──
+  { lat: 35.2769, lng: 136.2533, label: '彦根城周辺' },
+  { lat: 35.0045, lng: 135.8685, label: '近江八幡 水郷' },
+  { lat: 35.3714, lng: 136.1295, label: '長浜城周辺' },
+  { lat: 35.0721, lng: 135.8402, label: '比叡山 延暦寺周辺' },
+  { lat: 35.0144, lng: 135.9604, label: '草津宿 本陣周辺' },
+  { lat: 35.0045, lng: 135.8698, label: '大津 琵琶湖大橋周辺' },
+  { lat: 34.8819, lng: 136.0062, label: '信楽 たぬき街道' },
+  { lat: 35.1376, lng: 136.0607, label: '多賀大社周辺' },
+
+  // ── 京都 ──
+  { lat: 35.0116, lng: 135.7681, label: '京都 金閣寺周辺' },
+  { lat: 34.9949, lng: 135.7850, label: '京都 祇園' },
+  { lat: 34.9671, lng: 135.7727, label: '京都 伏見稲荷' },
+  { lat: 35.0168, lng: 135.6772, label: '嵐山 竹林の道' },
+  { lat: 34.9948, lng: 135.7851, label: '京都 清水寺周辺' },
+  { lat: 35.0142, lng: 135.7481, label: '京都 二条城周辺' },
+  { lat: 35.0239, lng: 135.7929, label: '京都 哲学の道' },
+  { lat: 35.0051, lng: 135.7674, label: '京都 錦市場' },
+  { lat: 34.8894, lng: 135.8082, label: '宇治 平等院周辺' },
+  { lat: 35.5643, lng: 135.1828, label: '天橋立 周辺' },
+  { lat: 34.9805, lng: 135.7478, label: '京都 東寺周辺' },
+  { lat: 35.0252, lng: 135.7623, label: '京都御所周辺' },
+
+  // ── 大阪 ──
   { lat: 34.6937, lng: 135.5023, label: '大阪城周辺' },
   { lat: 34.6727, lng: 135.5022, label: '道頓堀' },
   { lat: 34.7024, lng: 135.4959, label: '梅田' },
-  { lat: 35.0116, lng: 135.7681, label: '京都 金閣寺周辺' },
-  { lat: 34.9949, lng: 135.7850, label: '京都 祇園' },
-  { lat: 35.3606, lng: 138.7274, label: '富士山五合目' },
+  { lat: 34.6525, lng: 135.5065, label: '大阪 通天閣周辺' },
+  { lat: 34.6726, lng: 135.5010, label: '心斎橋周辺' },
+  { lat: 34.6686, lng: 135.4985, label: '難波 戎橋' },
+  { lat: 34.6122, lng: 135.4933, label: '住吉大社周辺' },
+  { lat: 34.6556, lng: 135.4351, label: '天保山 海遊館周辺' },
+  { lat: 34.6960, lng: 135.4986, label: '北新地周辺' },
+  { lat: 34.6663, lng: 135.5381, label: '鶴橋 コリアタウン' },
+  { lat: 34.5672, lng: 135.4870, label: '堺 仁徳天皇陵周辺' },
+  { lat: 34.6514, lng: 135.5064, label: '新世界 周辺' },
+
+  // ── 兵庫 ──
+  { lat: 34.6901, lng: 135.1956, label: '神戸 三宮' },
+  { lat: 34.8394, lng: 134.6939, label: '姫路城周辺' },
+  { lat: 35.6218, lng: 134.8202, label: '城崎温泉 外湯めぐり' },
+  { lat: 34.6994, lng: 135.1892, label: '神戸 北野異人館' },
+  { lat: 34.7972, lng: 135.2471, label: '有馬温泉 金の湯周辺' },
+  { lat: 34.6422, lng: 134.9978, label: '明石 時計台周辺' },
+  { lat: 34.2974, lng: 134.7196, label: '淡路島 大鳴門橋周辺' },
+  { lat: 34.7220, lng: 135.3617, label: '西宮 甲子園球場周辺' },
+  { lat: 34.8003, lng: 135.3590, label: '宝塚 大劇場周辺' },
+  { lat: 34.6872, lng: 135.1783, label: '神戸 南京町' },
+
+  // ── 奈良 ──
+  { lat: 34.6888, lng: 135.8399, label: '奈良 東大寺周辺' },
+  { lat: 34.3749, lng: 135.8327, label: '吉野 桜並木周辺' },
+  { lat: 34.5034, lng: 135.8327, label: '奈良 春日大社周辺' },
+  { lat: 34.6148, lng: 135.7345, label: '法隆寺 参道' },
+  { lat: 34.4619, lng: 135.8290, label: '飛鳥 石舞台古墳周辺' },
+  { lat: 34.4948, lng: 135.7961, label: '橿原神宮周辺' },
+  { lat: 34.6822, lng: 135.8370, label: '奈良 猿沢池周辺' },
+  { lat: 34.5694, lng: 136.0395, label: '室生寺 参道' },
+
+  // ── 和歌山 ──
+  { lat: 34.2127, lng: 135.5856, label: '高野山 奥の院参道' },
+  { lat: 33.7206, lng: 135.9941, label: '那智勝浦 熊野那智大社' },
+  { lat: 33.5987, lng: 135.3676, label: '串本 橋杭岩周辺' },
+  { lat: 33.6882, lng: 135.3568, label: '白浜 アドベンチャーワールド周辺' },
+  { lat: 34.2264, lng: 135.1725, label: '和歌山城周辺' },
+  { lat: 33.8464, lng: 135.7850, label: '熊野本宮大社 周辺' },
+  { lat: 33.4336, lng: 135.7595, label: '潮岬 灯台周辺' },
+  { lat: 34.1958, lng: 135.1594, label: '和歌山 和歌浦周辺' },
+
+  // ── 鳥取 ──
+  { lat: 35.5023, lng: 134.2353, label: '鳥取砂丘' },
+  { lat: 35.4896, lng: 133.7057, label: '倉吉 白壁土蔵群' },
+  { lat: 35.5001, lng: 134.2276, label: '鳥取 砂の美術館周辺' },
+  { lat: 35.5448, lng: 133.2325, label: '境港 水木しげるロード' },
+  { lat: 35.3760, lng: 133.8391, label: '三朝温泉 周辺' },
+  { lat: 35.3671, lng: 133.5467, label: '大山 博労座周辺' },
+  { lat: 35.4957, lng: 134.2365, label: '鳥取 砂丘センター周辺' },
+  { lat: 35.3896, lng: 133.6966, label: '琴浦 赤碕漁港周辺' },
+
+  // ── 島根 ──
+  { lat: 35.4015, lng: 132.6851, label: '出雲大社周辺' },
+  { lat: 35.4726, lng: 133.0508, label: '松江城周辺' },
+  { lat: 35.1015, lng: 132.4269, label: '石見銀山 大森地区' },
+  { lat: 35.4520, lng: 133.1009, label: '宍道湖 夕日スポット周辺' },
+  { lat: 35.3893, lng: 133.0567, label: '足立美術館周辺' },
+  { lat: 34.4686, lng: 131.7745, label: '津和野 殿町通り' },
+  { lat: 35.4610, lng: 132.7100, label: '出雲 古代出雲歴史博物館周辺' },
+  { lat: 35.5419, lng: 133.0750, label: '松江 小泉八雲記念館周辺' },
+
+  // ── 岡山 ──
+  { lat: 34.6674, lng: 133.9373, label: '岡山 後楽園周辺' },
+  { lat: 34.5965, lng: 133.7721, label: '倉敷 美観地区' },
+  { lat: 34.7586, lng: 134.3430, label: '津山城跡周辺' },
+  { lat: 34.8094, lng: 133.5715, label: '備中松山城 城下町' },
+  { lat: 34.6065, lng: 134.1508, label: '牛窓 オリーブ園周辺' },
+  { lat: 35.2571, lng: 133.6869, label: '蒜山高原 周辺' },
+  { lat: 34.5919, lng: 133.7649, label: '倉敷 アイビースクエア周辺' },
+  { lat: 34.6618, lng: 133.9395, label: '岡山駅周辺' },
+
+  // ── 広島 ──
   { lat: 34.3853, lng: 132.4553, label: '広島 原爆ドーム周辺' },
-  { lat: 43.0618, lng: 141.3545, label: '札幌 大通公園' },
-  { lat: 43.0688, lng: 141.3508, label: '札幌 時計台' },
+  { lat: 34.3948, lng: 132.3152, label: '宮島 厳島神社周辺' },
+  { lat: 34.4073, lng: 133.2052, label: '尾道 千光寺山周辺' },
+  { lat: 34.2414, lng: 132.5677, label: '呉 大和ミュージアム周辺' },
+  { lat: 34.4868, lng: 133.3636, label: '福山城周辺' },
+  { lat: 34.3395, lng: 132.9132, label: '竹原 町並み保存地区' },
+  { lat: 34.3960, lng: 132.4586, label: '広島 平和記念公園' },
+  { lat: 34.8062, lng: 132.8618, label: '三次 霧の海展望台周辺' },
+
+  // ── 山口 ──
+  { lat: 34.1534, lng: 132.1756, label: '錦帯橋周辺' },
+  { lat: 33.9543, lng: 130.9434, label: '下関 唐戸市場周辺' },
+  { lat: 34.4019, lng: 131.4652, label: '萩 城下町' },
+  { lat: 34.3731, lng: 130.8691, label: '角島大橋 周辺' },
+  { lat: 34.2311, lng: 131.2997, label: '秋吉台 カルスト台地' },
+  { lat: 34.1863, lng: 131.4717, label: '山口 瑠璃光寺周辺' },
+  { lat: 34.4527, lng: 131.0611, label: '長門 元乃隅神社周辺' },
+  { lat: 33.9510, lng: 131.2464, label: '宇部 ときわ公園周辺' },
+
+  // ── 徳島 ──
+  { lat: 34.2156, lng: 134.6372, label: '鳴門 渦の道周辺' },
+  { lat: 34.0712, lng: 134.5594, label: '徳島駅周辺' },
+  { lat: 33.8631, lng: 133.9125, label: '祖谷 かずら橋周辺' },
+  { lat: 33.8820, lng: 133.8683, label: '大歩危峡 周辺' },
+  { lat: 34.0623, lng: 134.1819, label: '脇町 うだつの町並み' },
+  { lat: 33.9591, lng: 134.5847, label: '阿南 海陽町 海岸' },
+  { lat: 34.1282, lng: 134.6143, label: '鳴門 大鳴門橋周辺' },
+  { lat: 34.0795, lng: 134.5557, label: '徳島 阿波踊り会館周辺' },
+
+  // ── 香川 ──
+  { lat: 34.1849, lng: 133.8181, label: '金刀比羅宮 参道' },
+  { lat: 34.3494, lng: 134.0465, label: '高松城周辺' },
+  { lat: 34.3181, lng: 134.0464, label: '高松 栗林公園周辺' },
+  { lat: 34.4839, lng: 134.2272, label: '小豆島 エンジェルロード周辺' },
+  { lat: 34.2858, lng: 133.7962, label: '丸亀城周辺' },
+  { lat: 34.2292, lng: 133.7756, label: '善通寺 周辺' },
+  { lat: 34.4583, lng: 133.9942, label: '直島 地中美術館周辺' },
+  { lat: 34.3530, lng: 134.0501, label: '高松 中央商店街' },
+
+  // ── 愛媛 ──
+  { lat: 33.8514, lng: 132.7878, label: '道後温泉 本館周辺' },
+  { lat: 33.8456, lng: 132.7658, label: '松山城周辺' },
+  { lat: 33.5419, lng: 132.5676, label: '内子 八日市護国の町並み' },
+  { lat: 34.0657, lng: 133.0053, label: '今治城周辺' },
+  { lat: 33.2220, lng: 132.5554, label: '宇和島城周辺' },
+  { lat: 33.5029, lng: 132.5472, label: '大洲城周辺' },
+  { lat: 34.0743, lng: 133.0029, label: 'しまなみ海道 来島海峡大橋展望台' },
+  { lat: 33.3611, lng: 132.5172, label: '西予 卯之町の町並み' },
+
+  // ── 高知 ──
+  { lat: 33.5596, lng: 133.5311, label: '高知城周辺' },
+  { lat: 33.5005, lng: 133.5716, label: '桂浜周辺' },
+  { lat: 33.2129, lng: 132.9682, label: '四万十川 沈下橋周辺' },
+  { lat: 33.5602, lng: 133.5297, label: '高知 龍馬の生まれた町周辺' },
+  { lat: 33.2437, lng: 134.1537, label: '室戸岬 周辺' },
+  { lat: 32.7295, lng: 132.9720, label: '足摺岬 周辺' },
+  { lat: 33.5519, lng: 133.5380, label: '高知 ひろめ市場周辺' },
+  { lat: 33.5003, lng: 133.9017, label: '安芸 野良時計周辺' },
+
+  // ── 福岡 ──
   { lat: 33.5904, lng: 130.4017, label: '福岡 天神周辺' },
-  { lat: 33.6060, lng: 130.4181, label: '博多駅周辺' },
+  { lat: 33.5553, lng: 130.3788, label: '太宰府天満宮周辺' },
+  { lat: 33.8826, lng: 130.8792, label: '門司港 レトロ地区' },
+  { lat: 33.5896, lng: 130.4208, label: '博多駅周辺' },
+  { lat: 33.5560, lng: 130.1809, label: '糸島 二見ヶ浦周辺' },
+  { lat: 33.1638, lng: 130.4049, label: '柳川 川下り乗り場' },
+  { lat: 33.8833, lng: 130.8748, label: '北九州 小倉城周辺' },
+  { lat: 33.5937, lng: 130.3594, label: '博多 中洲川端周辺' },
+  { lat: 33.5836, lng: 130.4282, label: '博多 キャナルシティ周辺' },
+  { lat: 33.6461, lng: 130.6913, label: '飯塚 嘉穂劇場周辺' },
+
+  // ── 佐賀 ──
+  { lat: 33.3217, lng: 130.3949, label: '吉野ヶ里遺跡周辺' },
+  { lat: 33.4603, lng: 129.9684, label: '唐津城周辺' },
+  { lat: 33.1847, lng: 129.8709, label: '有田 陶器市通り' },
+  { lat: 33.1910, lng: 130.0167, label: '武雄温泉 楼門周辺' },
+  { lat: 33.0978, lng: 130.0904, label: '嬉野温泉 湯宿広場周辺' },
+  { lat: 33.2438, lng: 130.2972, label: '佐賀城本丸歴史館周辺' },
+  { lat: 33.4519, lng: 130.0082, label: '唐津 虹の松原' },
+  { lat: 33.3629, lng: 129.8726, label: '呼子 朝市周辺' },
+
+  // ── 長崎 ──
+  { lat: 32.7503, lng: 129.8779, label: '長崎 平和公園' },
+  { lat: 32.7448, lng: 129.8734, label: '長崎 出島周辺' },
+  { lat: 33.1017, lng: 129.8692, label: 'ハウステンボス周辺' },
+  { lat: 32.7368, lng: 129.8673, label: '長崎 大浦天主堂周辺' },
+  { lat: 32.7533, lng: 130.2740, label: '雲仙温泉 周辺' },
+  { lat: 33.3671, lng: 129.5528, label: '平戸城周辺' },
+  { lat: 32.7480, lng: 129.8811, label: '長崎 グラバー園周辺' },
+  { lat: 32.6884, lng: 129.8754, label: '長崎 稲佐山展望台周辺' },
+
+  // ── 熊本 ──
+  { lat: 32.8066, lng: 130.7056, label: '熊本城周辺' },
+  { lat: 32.8827, lng: 131.1044, label: '阿蘇 草千里周辺' },
+  { lat: 32.4649, lng: 130.1875, label: '天草 崎津集落周辺' },
+  { lat: 33.0517, lng: 131.0853, label: '黒川温泉 周辺' },
+  { lat: 32.7908, lng: 130.7254, label: '水前寺成趣園周辺' },
+  { lat: 32.2124, lng: 130.7608, label: '人吉城跡周辺' },
+  { lat: 32.8079, lng: 130.7072, label: '熊本 上通アーケード' },
+  { lat: 32.9910, lng: 131.0879, label: '産山村 池山水源周辺' },
+
+  // ── 大分 ──
+  { lat: 33.2840, lng: 131.4888, label: '別府温泉 地獄めぐり周辺' },
+  { lat: 33.2562, lng: 131.3612, label: '湯布院 湯の坪街道' },
+  { lat: 33.5815, lng: 131.4040, label: '耶馬渓 青の洞門周辺' },
+  { lat: 33.5989, lng: 131.1905, label: '中津城周辺' },
+  { lat: 33.1175, lng: 131.8062, label: '臼杵石仏 周辺' },
+  { lat: 33.2382, lng: 131.6126, label: '大分市 府内城周辺' },
+  { lat: 33.4090, lng: 131.6162, label: '杵築城 城下町' },
+  { lat: 32.9726, lng: 131.3916, label: '豊後竹田 岡城跡' },
+
+  // ── 宮崎 ──
+  { lat: 31.9418, lng: 131.4239, label: '宮崎神宮周辺' },
+  { lat: 32.7093, lng: 131.3040, label: '高千穂峡周辺' },
+  { lat: 31.5818, lng: 131.6617, label: '日南海岸 鬼の洗濯板周辺' },
+  { lat: 31.8597, lng: 131.4738, label: '青島神社周辺' },
+  { lat: 31.4094, lng: 131.0675, label: '都井岬 周辺' },
+  { lat: 31.6451, lng: 131.4039, label: '飫肥城 城下町' },
+  { lat: 31.9108, lng: 131.4234, label: '宮崎 橘通り' },
+  { lat: 32.4199, lng: 131.6643, label: '延岡 城山公園周辺' },
+
+  // ── 鹿児島 ──
+  { lat: 31.5966, lng: 130.5571, label: '鹿児島 城山' },
+  { lat: 31.7791, lng: 130.7215, label: '霧島神宮周辺' },
+  { lat: 31.2438, lng: 130.6520, label: '指宿 砂むし温泉周辺' },
+  { lat: 31.5806, lng: 130.6575, label: '桜島 溶岩なぎさ公園' },
+  { lat: 31.3634, lng: 130.4346, label: '知覧 特攻平和会館周辺' },
+  { lat: 28.3796, lng: 129.4939, label: '奄美大島 奄美市街周辺' },
+  { lat: 30.3556, lng: 130.5406, label: '屋久島 ヤクスギランド周辺' },
+  { lat: 31.5974, lng: 130.5584, label: '鹿児島 天文館通り' },
+
+  // ── 沖縄 ──
   { lat: 26.2123, lng: 127.6792, label: '那覇 国際通り' },
   { lat: 26.4588, lng: 127.9294, label: '美ら海水族館周辺' },
-  { lat: 38.2682, lng: 140.8694, label: '仙台 青葉城跡' },
-  { lat: 36.6485, lng: 138.1952, label: '長野 善光寺周辺' },
-  { lat: 35.1855, lng: 136.8994, label: '名古屋城周辺' },
-  { lat: 35.1709, lng: 136.8815, label: '名古屋 栄' },
-  { lat: 34.6901, lng: 135.1956, label: '神戸 三宮' },
-  { lat: 34.6499, lng: 135.1882, label: '神戸 北野異人館' },
-  { lat: 32.7503, lng: 129.8779, label: '長崎 平和公園' },
-  { lat: 31.5966, lng: 130.5571, label: '鹿児島 城山' },
-  { lat: 36.5619, lng: 136.6562, label: '金沢 ひがし茶屋街' },
-  { lat: 33.5553, lng: 130.3788, label: '太宰府天満宮周辺' },
-  { lat: 34.3948, lng: 132.3152, label: '宮島 厳島神社周辺' },
-  { lat: 35.5023, lng: 134.2353, label: '鳥取砂丘' },
+  { lat: 26.1963, lng: 127.7129, label: '首里城周辺' },
+  { lat: 24.3377, lng: 124.1568, label: '石垣島 川平湾周辺' },
+  { lat: 24.8057, lng: 125.2812, label: '宮古島 市街周辺' },
+  { lat: 24.3253, lng: 124.0931, label: '竹富島 集落' },
+  { lat: 26.5085, lng: 127.8624, label: '沖縄 万座毛周辺' },
+  { lat: 26.2178, lng: 127.6873, label: '那覇 牧志公設市場周辺' },
+  { lat: 26.3986, lng: 127.8560, label: '沖縄 琉球村周辺' },
+  { lat: 26.5977, lng: 128.0392, label: '名護 市街周辺' },
 ];
 
 // ========== 世界チャレンジ 出題座標リスト（150か所） ==========
@@ -291,79 +763,25 @@ const PREFECTURES = {
   okinawa:   { name: '沖縄県', north: 26.9, south: 24.0, east: 128.3, west: 122.9 },
 };
 
-// ========== Google Identity Services 認証 ==========
-// ログイン情報はsessionStorageのみに保存（タブを閉じると消える）
-let gsiTokenClient = null;
-let currentUser    = null; // { displayName, email }
+// ========== ランダムネーム自動生成 ==========
+const HANDLE_COLORS  = ['赤い', '青い', '黄色い', '緑の', '白い', '黒い', '紫の', 'オレンジの', 'ピンクの', '水色の'];
+const HANDLE_ANIMALS = ['ライオン', 'パンダ', 'カバ', 'キリン', 'ゾウ', 'トラ', 'シマウマ', 'コアラ', 'ペンギン', 'イルカ',
+                        'サル', 'ウサギ', 'キツネ', 'オオカミ', 'タヌキ', 'クマ', 'ネコ', 'イヌ', 'ウマ', 'ヒョウ'];
 
-// メールのローカルパートで先生・生徒を判別
-// 先生: eで始まる / 生徒: 数字で始まる
-function isTeacher(email) { return /^e/i.test(email.split('@')[0]); }
-function isStudent(email)  { return /^\d/.test(email.split('@')[0]); }
-
-// GSI初期化（Maps APIロード後に呼ぶ）
-function initGSI() {
-  if (typeof google === 'undefined' || !google.accounts) return;
-  gsiTokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: GSI_CLIENT_ID,
-    scope: 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
-    callback: async (tokenResponse) => {
-      if (tokenResponse.error) {
-        document.getElementById('login-error').textContent = 'ログインに失敗しました。';
-        return;
-      }
-      try {
-        const res  = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: { Authorization: 'Bearer ' + tokenResponse.access_token }
-        });
-        const info = await res.json();
-        // sessionStorageに保存（ブラウザのみ・外部DB不使用）
-        sessionStorage.setItem('gsi_name',  info.name  || '');
-        sessionStorage.setItem('gsi_email', info.email || '');
-        currentUser = { displayName: info.name, email: info.email };
-        onLoginSuccess(currentUser);
-      } catch {
-        document.getElementById('login-error').textContent = 'ユーザー情報の取得に失敗しました。';
-      }
-    },
-  });
+function generateHandle() {
+  const c = HANDLE_COLORS[Math.floor(Math.random() * HANDLE_COLORS.length)];
+  const a = HANDLE_ANIMALS[Math.floor(Math.random() * HANDLE_ANIMALS.length)];
+  return c + a;
 }
 
-// Googleログイン実行（ポップアップ）
-function signInWithGoogle() {
-  if (!gsiTokenClient) initGSI(); // GSIスクリプトの読み込みが遅れた場合に再試行
-  if (!gsiTokenClient) {
-    document.getElementById('login-error').textContent = 'しばらく待ってから再試行してください。';
-    return;
+// 端末ごとに固定のランダムネームを返す（初回のみ生成してlocalStorageに保存）
+function getOrCreateHandle() {
+  let h = localStorage.getItem('player_handle');
+  if (!h) {
+    h = generateHandle();
+    localStorage.setItem('player_handle', h);
   }
-  document.getElementById('login-error').textContent = '';
-  gsiTokenClient.requestAccessToken({ prompt: 'select_account' });
-}
-
-// ログイン成功後の振り分け
-function onLoginSuccess(user) {
-  const email = user.email || '';
-  if (isTeacher(email)) {
-    // 先生 → 名前確認・編集画面へ
-    document.getElementById('teacher-name-input').value = user.displayName || '';
-    document.getElementById('teacher-name-error').textContent = '';
-    showScreen('screen-teacher-name');
-  } else {
-    // 生徒 → Google表示名をそのまま使用
-    playerName = user.displayName || email;
-    showScreen('screen-mode');
-  }
-}
-
-// セッション復元（ページリロード時）
-function restoreSession() {
-  const name  = sessionStorage.getItem('gsi_name');
-  const email = sessionStorage.getItem('gsi_email');
-  if (name && email) {
-    currentUser = { displayName: name, email };
-    return true;
-  }
-  return false;
+  return h;
 }
 
 // ========== 状態 ==========
@@ -395,40 +813,25 @@ function showScreen(id) {
 // ========== Google Maps API 初期化コールバック ==========
 window.initGame = function () {
   svService = new google.maps.StreetViewService();
-  initGSI();
 
-  // タイトル → ログイン画面（セッション復元チェック）
+  // タイトル → ランダムネーム確認画面
   document.getElementById('btn-to-name').addEventListener('click', () => {
-    if (restoreSession()) {
-      // セッション有効 → 直接振り分け
-      onLoginSuccess(currentUser);
-    } else {
-      document.getElementById('login-error').textContent = '';
-      showScreen('screen-login');
-    }
+    playerName = getOrCreateHandle();
+    document.getElementById('handle-display').textContent = playerName;
+    showScreen('screen-login');
   });
 
-  // ログイン画面
-  document.getElementById('btn-google-login').addEventListener('click', signInWithGoogle);
-  document.getElementById('btn-login-back').addEventListener('click', () => showScreen('screen-title'));
-
-  // 先生用名前確認画面
-  document.getElementById('btn-teacher-ok').addEventListener('click', () => {
-    const name = document.getElementById('teacher-name-input').value.trim();
-    if (!name) {
-      document.getElementById('teacher-name-error').textContent = '名前を入力してください';
-      return;
-    }
-    playerName = name;
+  // ランダムネーム確認画面
+  document.getElementById('btn-handle-ok').addEventListener('click', () => {
     showScreen('screen-mode');
   });
-  document.getElementById('btn-teacher-back').addEventListener('click', () => {
-    // ログアウト：sessionStorageを削除
-    sessionStorage.removeItem('gsi_name');
-    sessionStorage.removeItem('gsi_email');
-    currentUser = null;
-    showScreen('screen-title');
+  document.getElementById('btn-handle-reset').addEventListener('click', () => {
+    const h = generateHandle();
+    localStorage.setItem('player_handle', h);
+    playerName = h;
+    document.getElementById('handle-display').textContent = h;
   });
+  document.getElementById('btn-handle-back').addEventListener('click', () => showScreen('screen-title'));
 
   // タイトル → ランキング確認
   document.getElementById('btn-view-ranking').addEventListener('click', () => showRanking('nationwide', true));
