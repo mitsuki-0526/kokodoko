@@ -707,7 +707,8 @@ const WORLD_LOCATIONS = [
 // searchRadius: その地点周辺の何m以内でStreetViewを探すか（港・海の多い地域は小さめに）
 const CUSTOM_REGIONS = {
   chikko: {
-    name: '築港エリア（大阪港〜弁天町）',
+    name: '大阪市港区（築港〜弁天町）',
+    // 港区周辺に絞るバウンディングボックス（緯度経度）
     north: 34.675, south: 34.636, east: 135.473, west: 135.420,
     searchRadius: 1500,
   },
@@ -945,9 +946,10 @@ function collectLocalPanoramas(count) {
     if (latLng && pano) {
       localPanoramas.push({ latLng, pano });
     } else {
-      // 見つからなければ全国モードの座標で代替（panoなし）
-      const loc = LOCATIONS[Math.floor(Math.random() * LOCATIONS.length)];
-      localPanoramas.push({ latLng: new google.maps.LatLng(loc.lat, loc.lng), pano: null });
+      // 見つからなければ指定地域のランダム座標で代替（領域内・panoなし）
+      const lat = region.south + Math.random() * (region.north - region.south);
+      const lng = region.west  + Math.random() * (region.east  - region.west);
+      localPanoramas.push({ latLng: new google.maps.LatLng(lat, lng), pano: null });
     }
     collectLocalPanoramas(count + 1);
   });
